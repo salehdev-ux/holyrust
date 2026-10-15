@@ -13,9 +13,16 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 missing=0
+# Show the version when the tool answers one, and "present" when it does not —
+# on Git-bash/WSL some tools run but print nothing for --version, and a blank
+# column looks like a bug in this script rather than a quirk of the machine.
+show() {
+  v=$("$1" --version 2>&1 | head -1)
+  printf '%s' "${v:-present}"
+}
 need() {
   if command -v "$1" >/dev/null 2>&1; then
-    printf '  %-22s ok        %s\n' "$1" "$("$1" --version 2>&1 | head -1)"
+    printf '  %-22s ok        %s\n' "$1" "$(show "$1")"
   else
     printf '  %-22s MISSING   %s\n' "$1" "$2"
     missing=1
@@ -23,7 +30,7 @@ need() {
 }
 opt() {
   if command -v "$1" >/dev/null 2>&1; then
-    printf '  %-22s ok        %s\n' "$1" "$("$1" --version 2>&1 | head -1)"
+    printf '  %-22s ok        %s\n' "$1" "$(show "$1")"
   else
     printf '  %-22s absent    %s\n' "$1" "$2"
   fi
