@@ -331,11 +331,31 @@ def main():
 
     # --- TempleOS-RS Phase 2 (SPEC_TOS T2.1/T2.2 + BC1/BC2 + exit gate G2) ---
     def screendump_pixels():
+        """Capture the screen, or die honestly.
+
+        QEMU's monitor writes to a *fixed* path, so a capture that has not landed
+        yet silently reads the previous frame — which looks exactly like a frame
+        where the guest drew nothing (a black 3x3 neighbourhood and all). This
+        cost two separate debugging rounds: it was first mistaken for the guest
+        still executing, and only reproduced under host load. Delete the old file
+        first, then wait for the new one to appear and stop growing.
+        """
+        if os.path.exists(ppm):
+            os.remove(ppm)
         mon("screendump " + ppm.replace("\\", "/"))
-        time.sleep(0.6)
-        if not os.path.exists(ppm):
-            fail("screendump missing")
-        return read_ppm(ppm)
+        deadline = time.time() + 15.0
+        last = -1
+        while time.time() < deadline:
+            if os.path.exists(ppm):
+                now = os.path.getsize(ppm)
+                if now > 0 and now == last:
+                    try:
+                        return read_ppm(ppm)
+                    except ValueError:
+                        pass  # truncated mid-write; keep waiting
+                last = now
+            time.sleep(0.1)
+        fail(f"screendump never appeared at {ppm}")
 
     # T2.1: enter 640x480x16 from the shell. The kernel is already in protected
     # mode, so it programs the VGA registers directly instead of calling BIOS.
