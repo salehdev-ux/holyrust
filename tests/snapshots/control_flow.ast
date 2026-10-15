@@ -1,0 +1,514 @@
+Program {
+    items: [
+        Stmt(
+            While(
+                Binary(
+                    Lt,
+                    Ident(
+                        "a",
+                        Span {
+                            pos: Pos {
+                                line: 1,
+                                col: 8,
+                                offset: 7,
+                            },
+                            end: 8,
+                        },
+                    ),
+                    Ident(
+                        "b",
+                        Span {
+                            pos: Pos {
+                                line: 1,
+                                col: 12,
+                                offset: 11,
+                            },
+                            end: 12,
+                        },
+                    ),
+                    Span {
+                        pos: Pos {
+                            line: 1,
+                            col: 8,
+                            offset: 7,
+                        },
+                        end: 13,
+                    },
+                ),
+                Block(
+                    [
+                        ExprStmt(
+                            Unary(
+                                PostInc,
+                                Ident(
+                                    "a",
+                                    Span {
+                                        pos: Pos {
+                                            line: 1,
+                                            col: 17,
+                                            offset: 16,
+                                        },
+                                        end: 17,
+                                    },
+                                ),
+                                Span {
+                                    pos: Pos {
+                                        line: 1,
+                                        col: 17,
+                                        offset: 16,
+                                    },
+                                    end: 20,
+                                },
+                            ),
+                            Span {
+                                pos: Pos {
+                                    line: 1,
+                                    col: 17,
+                                    offset: 16,
+                                },
+                                end: 22,
+                            },
+                        ),
+                    ],
+                    Span {
+                        pos: Pos {
+                            line: 1,
+                            col: 15,
+                            offset: 14,
+                        },
+                        end: 25,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 1,
+                        col: 1,
+                        offset: 0,
+                    },
+                    end: 25,
+                },
+            ),
+        ),
+        Stmt(
+            DoWhile(
+                Block(
+                    [
+                        ExprStmt(
+                            Unary(
+                                PostDec,
+                                Ident(
+                                    "b",
+                                    Span {
+                                        pos: Pos {
+                                            line: 1,
+                                            col: 29,
+                                            offset: 28,
+                                        },
+                                        end: 29,
+                                    },
+                                ),
+                                Span {
+                                    pos: Pos {
+                                        line: 1,
+                                        col: 29,
+                                        offset: 28,
+                                    },
+                                    end: 32,
+                                },
+                            ),
+                            Span {
+                                pos: Pos {
+                                    line: 1,
+                                    col: 29,
+                                    offset: 28,
+                                },
+                                end: 34,
+                            },
+                        ),
+                    ],
+                    Span {
+                        pos: Pos {
+                            line: 1,
+                            col: 27,
+                            offset: 26,
+                        },
+                        end: 40,
+                    },
+                ),
+                Binary(
+                    Gt,
+                    Ident(
+                        "b",
+                        Span {
+                            pos: Pos {
+                                line: 1,
+                                col: 43,
+                                offset: 42,
+                            },
+                            end: 43,
+                        },
+                    ),
+                    LitInt(
+                        0,
+                        Span {
+                            pos: Pos {
+                                line: 1,
+                                col: 47,
+                                offset: 46,
+                            },
+                            end: 47,
+                        },
+                    ),
+                    Span {
+                        pos: Pos {
+                            line: 1,
+                            col: 43,
+                            offset: 42,
+                        },
+                        end: 48,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 1,
+                        col: 24,
+                        offset: 23,
+                    },
+                    end: 52,
+                },
+            ),
+        ),
+        Stmt(
+            If(
+                Binary(
+                    Eq,
+                    Ident(
+                        "a",
+                        Span {
+                            pos: Pos {
+                                line: 1,
+                                col: 55,
+                                offset: 54,
+                            },
+                            end: 55,
+                        },
+                    ),
+                    Ident(
+                        "b",
+                        Span {
+                            pos: Pos {
+                                line: 1,
+                                col: 60,
+                                offset: 59,
+                            },
+                            end: 60,
+                        },
+                    ),
+                    Span {
+                        pos: Pos {
+                            line: 1,
+                            col: 55,
+                            offset: 54,
+                        },
+                        end: 61,
+                    },
+                ),
+                Block(
+                    [
+                        ExprStmt(
+                            Assign(
+                                Ident(
+                                    "c",
+                                    Span {
+                                        pos: Pos {
+                                            line: 1,
+                                            col: 65,
+                                            offset: 64,
+                                        },
+                                        end: 65,
+                                    },
+                                ),
+                                Set,
+                                LitInt(
+                                    1,
+                                    Span {
+                                        pos: Pos {
+                                            line: 1,
+                                            col: 69,
+                                            offset: 68,
+                                        },
+                                        end: 69,
+                                    },
+                                ),
+                                Span {
+                                    pos: Pos {
+                                        line: 1,
+                                        col: 65,
+                                        offset: 64,
+                                    },
+                                    end: 70,
+                                },
+                            ),
+                            Span {
+                                pos: Pos {
+                                    line: 1,
+                                    col: 65,
+                                    offset: 64,
+                                },
+                                end: 72,
+                            },
+                        ),
+                    ],
+                    Span {
+                        pos: Pos {
+                            line: 1,
+                            col: 63,
+                            offset: 62,
+                        },
+                        end: 77,
+                    },
+                ),
+                Some(
+                    Block(
+                        [
+                            ExprStmt(
+                                Assign(
+                                    Ident(
+                                        "c",
+                                        Span {
+                                            pos: Pos {
+                                                line: 1,
+                                                col: 81,
+                                                offset: 80,
+                                            },
+                                            end: 81,
+                                        },
+                                    ),
+                                    Set,
+                                    LitInt(
+                                        2,
+                                        Span {
+                                            pos: Pos {
+                                                line: 1,
+                                                col: 85,
+                                                offset: 84,
+                                            },
+                                            end: 85,
+                                        },
+                                    ),
+                                    Span {
+                                        pos: Pos {
+                                            line: 1,
+                                            col: 81,
+                                            offset: 80,
+                                        },
+                                        end: 86,
+                                    },
+                                ),
+                                Span {
+                                    pos: Pos {
+                                        line: 1,
+                                        col: 81,
+                                        offset: 80,
+                                    },
+                                    end: 88,
+                                },
+                            ),
+                        ],
+                        Span {
+                            pos: Pos {
+                                line: 1,
+                                col: 79,
+                                offset: 78,
+                            },
+                            end: 92,
+                        },
+                    ),
+                ),
+                Span {
+                    pos: Pos {
+                        line: 1,
+                        col: 51,
+                        offset: 50,
+                    },
+                    end: 92,
+                },
+            ),
+        ),
+        Stmt(
+            For(
+                None,
+                None,
+                None,
+                Block(
+                    [
+                        Break(
+                            Span {
+                                pos: Pos {
+                                    line: 1,
+                                    col: 101,
+                                    offset: 100,
+                                },
+                                end: 108,
+                            },
+                        ),
+                    ],
+                    Span {
+                        pos: Pos {
+                            line: 1,
+                            col: 99,
+                            offset: 98,
+                        },
+                        end: 112,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 1,
+                        col: 90,
+                        offset: 89,
+                    },
+                    end: 112,
+                },
+            ),
+        ),
+        Stmt(
+            For(
+                Some(
+                    ExprStmt(
+                        Assign(
+                            Ident(
+                                "i",
+                                Span {
+                                    pos: Pos {
+                                        line: 1,
+                                        col: 115,
+                                        offset: 114,
+                                    },
+                                    end: 115,
+                                },
+                            ),
+                            Set,
+                            LitInt(
+                                0,
+                                Span {
+                                    pos: Pos {
+                                        line: 1,
+                                        col: 119,
+                                        offset: 118,
+                                    },
+                                    end: 119,
+                                },
+                            ),
+                            Span {
+                                pos: Pos {
+                                    line: 1,
+                                    col: 115,
+                                    offset: 114,
+                                },
+                                end: 120,
+                            },
+                        ),
+                        Span {
+                            pos: Pos {
+                                line: 1,
+                                col: 110,
+                                offset: 109,
+                            },
+                            end: 120,
+                        },
+                    ),
+                ),
+                Some(
+                    Binary(
+                        Lt,
+                        Ident(
+                            "i",
+                            Span {
+                                pos: Pos {
+                                    line: 1,
+                                    col: 122,
+                                    offset: 121,
+                                },
+                                end: 122,
+                            },
+                        ),
+                        LitInt(
+                            3,
+                            Span {
+                                pos: Pos {
+                                    line: 1,
+                                    col: 126,
+                                    offset: 125,
+                                },
+                                end: 126,
+                            },
+                        ),
+                        Span {
+                            pos: Pos {
+                                line: 1,
+                                col: 122,
+                                offset: 121,
+                            },
+                            end: 127,
+                        },
+                    ),
+                ),
+                Some(
+                    Unary(
+                        PostInc,
+                        Ident(
+                            "i",
+                            Span {
+                                pos: Pos {
+                                    line: 1,
+                                    col: 129,
+                                    offset: 128,
+                                },
+                                end: 129,
+                            },
+                        ),
+                        Span {
+                            pos: Pos {
+                                line: 1,
+                                col: 129,
+                                offset: 128,
+                            },
+                            end: 132,
+                        },
+                    ),
+                ),
+                Block(
+                    [
+                        Continue(
+                            Span {
+                                pos: Pos {
+                                    line: 1,
+                                    col: 136,
+                                    offset: 135,
+                                },
+                                end: 146,
+                            },
+                        ),
+                    ],
+                    Span {
+                        pos: Pos {
+                            line: 1,
+                            col: 134,
+                            offset: 133,
+                        },
+                        end: 146,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 1,
+                        col: 110,
+                        offset: 109,
+                    },
+                    end: 146,
+                },
+            ),
+        ),
+    ],
+}

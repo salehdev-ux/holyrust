@@ -1,0 +1,353 @@
+Program {
+    items: [
+        Stmt(
+            For(
+                Some(
+                    Decl(
+                        I64,
+                        "i",
+                        Some(
+                            LitInt(
+                                1,
+                                Span {
+                                    pos: Pos {
+                                        line: 2,
+                                        col: 14,
+                                        offset: 93,
+                                    },
+                                    end: 94,
+                                },
+                            ),
+                        ),
+                        Span {
+                            pos: Pos {
+                                line: 2,
+                                col: 1,
+                                offset: 80,
+                            },
+                            end: 95,
+                        },
+                    ),
+                ),
+                Some(
+                    Binary(
+                        Le,
+                        Ident(
+                            "i",
+                            Span {
+                                pos: Pos {
+                                    line: 2,
+                                    col: 17,
+                                    offset: 96,
+                                },
+                                end: 97,
+                            },
+                        ),
+                        LitInt(
+                            30,
+                            Span {
+                                pos: Pos {
+                                    line: 2,
+                                    col: 22,
+                                    offset: 101,
+                                },
+                                end: 103,
+                            },
+                        ),
+                        Span {
+                            pos: Pos {
+                                line: 2,
+                                col: 17,
+                                offset: 96,
+                            },
+                            end: 104,
+                        },
+                    ),
+                ),
+                Some(
+                    Unary(
+                        PostInc,
+                        Ident(
+                            "i",
+                            Span {
+                                pos: Pos {
+                                    line: 2,
+                                    col: 26,
+                                    offset: 105,
+                                },
+                                end: 106,
+                            },
+                        ),
+                        Span {
+                            pos: Pos {
+                                line: 2,
+                                col: 26,
+                                offset: 105,
+                            },
+                            end: 109,
+                        },
+                    ),
+                ),
+                Block(
+                    [
+                        Switch(
+                            Binary(
+                                Mod,
+                                Ident(
+                                    "i",
+                                    Span {
+                                        pos: Pos {
+                                            line: 3,
+                                            col: 11,
+                                            offset: 122,
+                                        },
+                                        end: 123,
+                                    },
+                                ),
+                                LitInt(
+                                    15,
+                                    Span {
+                                        pos: Pos {
+                                            line: 3,
+                                            col: 15,
+                                            offset: 126,
+                                        },
+                                        end: 128,
+                                    },
+                                ),
+                                Span {
+                                    pos: Pos {
+                                        line: 3,
+                                        col: 11,
+                                        offset: 122,
+                                    },
+                                    end: 129,
+                                },
+                            ),
+                            [
+                                CaseArm {
+                                    vals: Some(
+                                        [
+                                            One(
+                                                0,
+                                            ),
+                                        ],
+                                    ),
+                                    body: [
+                                        ExprStmt(
+                                            LitStr(
+                                                "FizzBuzz\n",
+                                                Span {
+                                                    pos: Pos {
+                                                        line: 5,
+                                                        col: 7,
+                                                        offset: 150,
+                                                    },
+                                                    end: 162,
+                                                },
+                                            ),
+                                            Span {
+                                                pos: Pos {
+                                                    line: 5,
+                                                    col: 7,
+                                                    offset: 150,
+                                                },
+                                                end: 172,
+                                            },
+                                        ),
+                                    ],
+                                    span: Span {
+                                        pos: Pos {
+                                            line: 4,
+                                            col: 5,
+                                            offset: 136,
+                                        },
+                                        end: 172,
+                                    },
+                                },
+                                CaseArm {
+                                    vals: Some(
+                                        [
+                                            One(
+                                                3,
+                                            ),
+                                            One(
+                                                6,
+                                            ),
+                                            One(
+                                                9,
+                                            ),
+                                            One(
+                                                12,
+                                            ),
+                                        ],
+                                    ),
+                                    body: [
+                                        ExprStmt(
+                                            LitStr(
+                                                "Fizz\n",
+                                                Span {
+                                                    pos: Pos {
+                                                        line: 7,
+                                                        col: 7,
+                                                        offset: 192,
+                                                    },
+                                                    end: 200,
+                                                },
+                                            ),
+                                            Span {
+                                                pos: Pos {
+                                                    line: 7,
+                                                    col: 7,
+                                                    offset: 192,
+                                                },
+                                                end: 210,
+                                            },
+                                        ),
+                                    ],
+                                    span: Span {
+                                        pos: Pos {
+                                            line: 6,
+                                            col: 5,
+                                            offset: 168,
+                                        },
+                                        end: 210,
+                                    },
+                                },
+                                CaseArm {
+                                    vals: Some(
+                                        [
+                                            One(
+                                                5,
+                                            ),
+                                            One(
+                                                10,
+                                            ),
+                                        ],
+                                    ),
+                                    body: [
+                                        ExprStmt(
+                                            LitStr(
+                                                "Buzz\n",
+                                                Span {
+                                                    pos: Pos {
+                                                        line: 9,
+                                                        col: 7,
+                                                        offset: 224,
+                                                    },
+                                                    end: 232,
+                                                },
+                                            ),
+                                            Span {
+                                                pos: Pos {
+                                                    line: 9,
+                                                    col: 7,
+                                                    offset: 224,
+                                                },
+                                                end: 245,
+                                            },
+                                        ),
+                                    ],
+                                    span: Span {
+                                        pos: Pos {
+                                            line: 8,
+                                            col: 5,
+                                            offset: 206,
+                                        },
+                                        end: 245,
+                                    },
+                                },
+                                CaseArm {
+                                    vals: None,
+                                    body: [
+                                        ExprStmt(
+                                            Call(
+                                                "Print",
+                                                [
+                                                    Some(
+                                                        Ident(
+                                                            "i",
+                                                            Span {
+                                                                pos: Pos {
+                                                                    line: 11,
+                                                                    col: 13,
+                                                                    offset: 259,
+                                                                },
+                                                                end: 260,
+                                                            },
+                                                        ),
+                                                    ),
+                                                    Some(
+                                                        LitStr(
+                                                            "\n",
+                                                            Span {
+                                                                pos: Pos {
+                                                                    line: 11,
+                                                                    col: 16,
+                                                                    offset: 262,
+                                                                },
+                                                                end: 266,
+                                                            },
+                                                        ),
+                                                    ),
+                                                ],
+                                                Span {
+                                                    pos: Pos {
+                                                        line: 11,
+                                                        col: 7,
+                                                        offset: 253,
+                                                    },
+                                                    end: 268,
+                                                },
+                                            ),
+                                            Span {
+                                                pos: Pos {
+                                                    line: 11,
+                                                    col: 7,
+                                                    offset: 253,
+                                                },
+                                                end: 272,
+                                            },
+                                        ),
+                                    ],
+                                    span: Span {
+                                        pos: Pos {
+                                            line: 10,
+                                            col: 5,
+                                            offset: 238,
+                                        },
+                                        end: 272,
+                                    },
+                                },
+                            ],
+                            Span {
+                                pos: Pos {
+                                    line: 3,
+                                    col: 3,
+                                    offset: 114,
+                                },
+                                end: 274,
+                            },
+                        ),
+                    ],
+                    Span {
+                        pos: Pos {
+                            line: 2,
+                            col: 31,
+                            offset: 110,
+                        },
+                        end: 275,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 2,
+                        col: 1,
+                        offset: 80,
+                    },
+                    end: 275,
+                },
+            ),
+        ),
+    ],
+}

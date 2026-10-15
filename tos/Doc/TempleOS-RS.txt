@@ -1,0 +1,149 @@
+# TempleOS-RS
+
+This file lives *inside* the operating system, at /TOS/Doc/TempleOS-RS.txt.
+That is the point: `Cat("/TOS/Doc/TempleOS-RS.txt");` is the OS describing
+itself, from storage that exists only while the OS is running.
+
+## What this is
+
+A 640x480, 16-colour, single-tasking operating system in the spirit of
+Terry A. Davis's TempleOS. Its filesystem commands, shell, drawing, sound,
+editor and applications are written in HolyRust and compiled by the JIT that
+runs inside the kernel; the kernel that hosts them is Rust, because that is the
+part that touches hardware. Every file you can read here is source code, every
+command is a compilation, and any of it can be rewritten while the system runs.
+
+## The filesystem (Phase 1)
+
+Flat namespace, in memory, no directories in the storage layer. A "path" is
+just the whole name of an entry, so `/TOS/Files.HR` is one name, not a walk
+through folders. The `/TOS/` prefix is a convention enforced by the HolyRust
+layer in `/TOS/Files.HR`, not by the storage primitives.
+
+Four primitives do all storage work:
+
+    FsWrite(path, content)   create or overwrite; 1 ok, 0 refused
+    FsRead(path)             contents; the empty string when absent
+    FsList(i)                the i-th name; the empty string past the end
+    FsDelete(path)           remove; 1 removed, 0 absent
+
+Everything else — listing, glob matching, existence, byte counts, error
+messages — is HolyRust in `/TOS/Files.HR` and `/TOS/Shell.HR`. Edit those files
+and re-include them and the OS's filesystem behaviour changes without a reboot.
+
+## Graphics (Phase 2)
+
+The screen is VGA mode 12h: 640x480, 16 colours, planar. Four primitives live in
+Rust because they touch the hardware:
+
+    GfxInit()                enter 640x480x16; returns 1 when a device exists
+    GfxClear(color)          fill the screen
+    Plot(x, y, color)        one pixel; off-screen coordinates clip silently
+    GfxChar(x, y, color, c)  one 8x8 glyph
+
+Everything else is HolyRust in /TOS/Graphics.HR:
+
+    Line(x0,y0,x1,y1,c)      Bresenham, integer only
+    Rect(x,y,w,h,c)          outline
+    FillRect(x,y,w,h,c)      filled
+    Circle(cx,cy,r,c)        midpoint circle
+    FillCircle(cx,cy,r,c)    filled circle
+    TextOut(x,y,c,"text")    8x8 text
+    GfxDemo()                the graphics self-test (`demo` at the prompt)
+
+The 16 colours are the standard EGA order: 0 black, 1 blue, 2 green, 3 cyan,
+4 red, 5 magenta, 6 brown, 7 light grey, 8 dark grey, 9 light blue,
+10 light green, 11 light cyan, 12 light red, 13 light magenta, 14 yellow,
+15 white. The console keeps working in graphics mode: its output is rendered
+into the framebuffer with the same 8x8 font.
+
+## Time and the mouse (Phase 3)
+
+There is no scheduler: SPEC_TOS §1.4 freezes multi-tasking out of v1, so time is
+kept by *polling* the 8254 programmable interval timer. Channel 0 is programmed
+as a rate generator with a divisor of 1193, so the down-counter ticks at about
+1 kHz and one counter unit is one millisecond; the clock accumulates wraps and is
+therefore exact while the guest is waiting and merely coarse otherwise.
+
+    Time()        milliseconds since boot
+    Sleep(ms)     busy-wait; returns the milliseconds waited
+    Date()        YYYYMMDD from the CMOS real-time clock, 0 when unreadable
+
+The PS/2 mouse is also polled (interrupts are out of scope). `MouseInit()` turns
+the auxiliary port on and starts data reporting; the kernel drains three-byte
+packets while the shell waits for input, and draws a 5x5 crosshair cursor that
+saves and restores the pixels it covers.
+
+    MouseInit()   enable the device; 1 on success
+    MouseX()      cursor column, 0..639
+    MouseY()      cursor row, 0..479
+
+## The editor and `#include` (Phase 5)
+
+`/TOS/Editor.HR` edits any file in this filesystem, including this OS's own
+source. The buffer is one session at a time and lives beside the filesystem, so
+"the file you are editing" is part of the running machine.
+
+    Ed("path")                       open a file; reports its line count
+    EdShow()                         print the buffer with line numbers
+    EdReplaceLine("find", "text")    rewrite the first line containing `find`
+    EdSave()                         write the buffer back
+    EdOpen/EdLines/EdLine/EdSet/EdFind/EdSave/EdClose   the primitives
+
+`#include "path"` splices another file's source into the unit being compiled.
+The file is looked up in **this** filesystem first, which is why the OS can
+include its own source. Nesting is capped at 8.
+
+The whole point, executable at the prompt:
+
+    Ed("/TOS/Files.HR");                  // open the OS's own source
+    EdReplaceLine("Str OsName", "Str OsName() { return \"mine\"; }");
+    EdSave();                             // write it back
+    #include "/TOS/Files.HR"              // recompile it in this session
+    Print(OsName(), "\n");                // -> mine
+
+No reboot, no crash, memory integrity checked at every step.
+
+## Flight (Phase 7)
+
+`flight` at the prompt puts you over a field of wireframe pyramids, in the
+spirit of TempleOS's *AfterEgypt*. It is `/TOS/Flight.HR`, compiled at boot like
+every other module, and it uses only the graphics builtins.
+
+    mouse X      bank (roll)
+    mouse Y      pitch
+    w / s        throttle up / down
+    space        level the wings
+    r            reset
+    q            land, back to the shell
+
+Fly it a frame at a time from HolyRust if you prefer:
+
+    FlightInit();          // enter graphics mode and reset the aircraft
+    FlightStep();          // one frame: read input, integrate, render
+    FlightRun(200);        // many frames
+    FlightExit();          // land
+
+The horizon tilts as you bank and drops as you pitch, which is the whole
+illusion. The maths is real floating point: `Sin`/`Cos` range-reduce and then use
+a 7th-order series, because guest code has no libm.
+
+## Commands
+
+    help                  this list
+    ls                    every entry
+    files                 the OS's own source
+    docs                  the OS's documentation
+    demo                  graphics self-test
+    beep                  play a scale on the PC speaker
+    oracle                a randomly chosen verse
+    flight                fly over the wireframe pyramids
+    edshow / edsave       show the edit buffer / write it back
+    Dir("pat")            entries matching a glob (one '*')
+    Cat("path")           print a file
+    FWrite("p","text")    create or overwrite
+    FRead("path")         read a file
+    FDel("path")          delete a file
+    Count()               number of entries
+
+Anything else you type is HolyRust: it is compiled and executed as you type it.

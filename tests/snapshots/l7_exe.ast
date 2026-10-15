@@ -1,0 +1,64 @@
+Program {
+    items: [
+        Stmt(
+            Exe(
+                Block(
+                    [
+                        ExprStmt(
+                            Call(
+                                "Print",
+                                [
+                                    Some(
+                                        LitStr(
+                                            "I64 z = 7;\n",
+                                            Span {
+                                                pos: Pos {
+                                                    line: 1,
+                                                    col: 14,
+                                                    offset: 13,
+                                                },
+                                                end: 27,
+                                            },
+                                        ),
+                                    ),
+                                ],
+                                Span {
+                                    pos: Pos {
+                                        line: 1,
+                                        col: 8,
+                                        offset: 7,
+                                    },
+                                    end: 29,
+                                },
+                            ),
+                            Span {
+                                pos: Pos {
+                                    line: 1,
+                                    col: 8,
+                                    offset: 7,
+                                },
+                                end: 31,
+                            },
+                        ),
+                    ],
+                    Span {
+                        pos: Pos {
+                            line: 1,
+                            col: 1,
+                            offset: 0,
+                        },
+                        end: 31,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 1,
+                        col: 1,
+                        offset: 0,
+                    },
+                    end: 31,
+                },
+            ),
+        ),
+    ],
+}

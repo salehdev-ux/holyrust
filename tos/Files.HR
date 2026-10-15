@@ -1,0 +1,236 @@
+// /TOS/Files.HR — the filesystem layer of TempleOS-RS (SPEC_TOS T1.3).
+//
+// Every function below is HolyRust. Underneath them sit exactly six raw
+// primitives — FsWrite / FsRead / FsList / FsDelete / StrLen / StrEq — and
+// *nothing else*: every naming rule, wildcard, listing format and refusal
+// message lives in THIS file. That is the whole point of SPEC_TOS §2.3:
+// `Cat("/TOS/Files.HR")` shows the code that implements `Cat`, and hot-patching
+// this file changes how the OS's filesystem behaves while the OS keeps running
+// (exit gate G1).
+//
+// Two v1 language rules shape how this file is written. Both were established
+// by measurement, not assumption (see docs/PROGRESS.md TOS-P1.2):
+//
+//   1. `Str[i]` traps when `i == len`, so the NUL terminator is NOT readable
+//      and every walk is bounded by `StrLen(s)`.
+//   2. Passing a `Str` **variable or parameter** to a *user-defined* function
+//      MOVES it — the caller may not read or re-pass it afterwards. Literals,
+//      builtins and plain reads are unaffected. So a pattern cannot be handed
+//      to a helper once per loop iteration.
+//
+// Rule 2 is why the current traversal keeps its pattern and current entry in
+// the globals below and why the matching helper takes no arguments at all. It
+// is also why `GlobMatch` (the one-shot convenience form) is documented as
+// consuming both of its arguments. Removing the globals needs a `Str` copy
+// primitive — quarantined in docs/FUTURE_IDEAS.md F18.
+
+// ---- current-traversal state ----------------------------------------------
+// Single-threaded by construction: SPEC_TOS §1.4 freezes out SMP and
+// multi-tasking, so one traversal can be in flight at a time.
+
+Str gPattern = "";
+Str gName = "";
+I64 gStar = -1;
+I64 gPlen = 0;
+
+// Adopt `pat` as the pattern for the current traversal (consumes `pat`) and
+// pre-compute where its single '*' is, if it has one. '*'
+// is byte 42.
+U0 SetPattern(Str pat) {
+  gPattern = pat;
+  gPlen = StrLen(gPattern);
+  gStar = -1;
+  I64 k = 0;
+  while (k < gPlen) {
+    if (gPattern[k] == 42) { gStar = k; }
+    k = k + 1;
+  }
+}
+
+// Adopt `nm` as the current entry (consumes `nm`).
+U0 SetName(Str nm) {
+  gName = nm;
+}
+
+// 1 when the current entry matches the current pattern.
+// Glob syntax: a SINGLE '*' meaning "any run of bytes". '?' and character
+// classes are not supported in v1 (documented limitation).
+I64 MatchCurrent() {
+  if (gStar < 0) {
+    if (StrLen(gName) != gPlen) { return 0; }
+    I64 j = 0;
+    while (j < gPlen) {
+      if (gName[j] != gPattern[j]) { return 0; }
+      j = j + 1;
+    }
+    return 1;
+  }
+  I64 tail = gPlen - gStar - 1;
+  I64 nl = StrLen(gName);
+  if (nl < gStar + tail) { return 0; }
+  I64 j = 0;
+  while (j < gStar) {
+    if (gName[j] != gPattern[j]) { return 0; }
+    j = j + 1;
+  }
+  j = 0;
+  while (j < tail) {
+    if (gName[nl - tail + j] != gPattern[gStar + 1 + j]) { return 0; }
+    j = j + 1;
+  }
+  return 1;
+}
+
+// One-shot predicate for callers holding literals: consumes BOTH arguments
+// (rule 2 above). `Dir` does not use it — a loop cannot re-pass a pattern.
+I64 GlobMatch(Str pat, Str name) {
+  SetPattern(pat);
+  SetName(name);
+  return MatchCurrent();
+}
+
+// ---- the byte-level toolbox the rest of the OS shares ----------------------
+
+// 1 when `s` begins with `prefix` (an empty prefix matches everything).
+I64 StartsWith(Str s, Str prefix) {
+  I64 pl = StrLen(prefix);
+  if (pl > StrLen(s)) { return 0; }
+  I64 i = 0;
+  while (i < pl) {
+    if (s[i] != prefix[i]) { return 0; }
+    i = i + 1;
+  }
+  return 1;
+}
+
+// 1 when `s` ends with `suffix`.
+I64 EndsWith(Str s, Str suffix) {
+  I64 sl = StrLen(s);
+  I64 fl = StrLen(suffix);
+  if (fl > sl) { return 0; }
+  I64 i = 0;
+  while (i < fl) {
+    if (s[sl - fl + i] != suffix[i]) { return 0; }
+    i = i + 1;
+  }
+  return 1;
+}
+
+// Index of the first byte equal to `ch`, or -1 when absent.
+I64 StrFind(Str s, I64 ch) {
+  I64 n = StrLen(s);
+  I64 i = 0;
+  while (i < n) {
+    if (s[i] == ch) { return i; }
+    i = i + 1;
+  }
+  return -1;
+}
+
+// ---- the filesystem commands ----------------------------------------------
+
+// Dir(pattern) — list every entry whose full path matches `pattern`.
+U0 Dir(Str pattern) {
+  Print("-- ", pattern, "\n");
+  SetPattern(pattern); // consumes `pattern`; gPattern carries it from here
+  I64 i = 0;
+  I64 shown = 0;
+  while (1) {
+    Str name = FsList(i);
+    if (StrLen(name) == 0) { break; }
+    SetName(name); // consumes `name`; gName carries it from here
+    if (MatchCurrent() == 1) {
+      Print("   ", gName, "\n");
+      shown = shown + 1;
+    }
+    i = i + 1;
+  }
+  if (shown == 1) {
+    Print("   ", shown, " entry\n");
+  } else {
+    Print("   ", shown, " entries\n");
+  }
+}
+
+// FWrite(path, content) — create or overwrite, reporting the outcome so the
+// shell never silently loses a write.
+I64 FWrite(Str path, Str content) {
+  I64 ok = FsWrite(path, content);
+  if (ok == 1) {
+    Print("wrote ", path, " (", StrLen(content), " bytes)\n");
+  } else {
+    Print("refused ", path, " — namespace full or file over budget\n");
+  }
+  return ok;
+}
+
+// FRead(path) — the file's contents; the empty string plus a notice when the
+// path is not in the namespace.
+Str FRead(Str path) {
+  Str s = FsRead(path);
+  if (StrLen(s) == 0) {
+    Print("(no such file) ", path, "\n");
+  }
+  return s;
+}
+
+// FDel(path) — remove an entry.
+I64 FDel(Str path) {
+  I64 ok = FsDelete(path);
+  if (ok == 1) {
+    Print("deleted ", path, "\n");
+  } else {
+    Print("(no such file) ", path, "\n");
+  }
+  return ok;
+}
+
+// Exists(path) — 1 when the namespace holds an entry with exactly this name.
+// Searches the listing rather than reading, so an *empty* file still exists.
+// Uses the non-consuming `StrEq` builtin, so `path` is used only by reads.
+I64 Exists(Str path) {
+  I64 i = 0;
+  while (1) {
+    Str name = FsList(i);
+    if (StrLen(name) == 0) { return 0; }
+    if (StrEq(name, path) == 1) { return 1; }
+    i = i + 1;
+  }
+  return 0;
+}
+
+// Cat(path) — print a file's bytes.
+U0 Cat(Str path) {
+  Str s = FsRead(path);
+  if (StrLen(s) == 0) {
+    Print("(no such file) ", path, "\n");
+  } else {
+    Print(s, "\n");
+  }
+}
+
+// Count() — how many entries the flat namespace currently holds.
+I64 Count() {
+  I64 i = 0;
+  while (1) {
+    Str name = FsList(i);
+    if (StrLen(name) == 0) { break; }
+    i = i + 1;
+  }
+  return i;
+}
+
+// Size(path) — byte length of a file, 0 for an empty file, -1 when absent.
+// `Exists` consumes `path`, so it is deliberately the last use of it.
+I64 Size(Str path) {
+  Str s = FsRead(path);
+  if (StrLen(s) > 0) { return StrLen(s); }
+  if (Exists(path) == 1) { return 0; }
+  return -1;
+}
+
+// OsName() — ONE line on purpose. The self-edit end-to-end test (exit gate G5)
+// opens this very file with the editor, rewrites exactly this line, saves, and
+// re-includes the file — so the edit target must be a single line that can be
+// replaced without disturbing the code around it.
+Str OsName() { return "TempleOS-RS"; }

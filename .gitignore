@@ -1,0 +1,12 @@
+/target
+/kernel/target
+/kernel/kernel.bin
+/kernel/Cargo.lock
+session.log
+*.so
+*.o
+/kernel/kernel.elf
+/kernel/boot.o
+
+# local noise: an unexplained 4 KB RIFF stub that predates this cleanup
+qemu.wav

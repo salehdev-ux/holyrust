@@ -1,0 +1,33 @@
+# Line endings are pinned, not inherited from the contributor's git config.
+#
+# This matters here for three concrete reasons:
+#   * tests/snapshots/*.ast are compared byte-for-byte by parser_snapshots.rs,
+#     so a CRLF checkout could fail otherwise-passing tests;
+#   * tools/*.sh and kernel/build.sh are consumed by Linux shells;
+#   * kernel/boot.S and bootasm.rs feed the assembler and include_str!.
+#
+# Default: normalise to LF in the repository and check out LF everywhere.
+* text=auto eol=lf
+
+# Windows-only tooling is conventionally CRLF.
+*.ps1   text eol=crlf
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+
+# Binaries: never convert.
+*.png   binary
+*.jpg   binary
+*.gif   binary
+*.bin   binary
+*.elf   binary
+*.o     binary
+*.a     binary
+*.so    binary
+*.wav   binary
+*.zip   binary
+*.gz    binary
+
+# Diffs that humans actually want to read.
+*.md    diff
+*.rs    diff
+*.HR    diff

@@ -1,0 +1,104 @@
+Program {
+    items: [
+        Class(
+            ClassDef {
+                name: "Point",
+                fields: [
+                    (
+                        I64,
+                        "x",
+                    ),
+                    (
+                        I64,
+                        "y",
+                    ),
+                    (
+                        U0,
+                        "tag",
+                    ),
+                ],
+                span: Span {
+                    pos: Pos {
+                        line: 1,
+                        col: 1,
+                        offset: 0,
+                    },
+                    end: 44,
+                },
+            },
+        ),
+        Stmt(
+            Decl(
+                Named(
+                    "Point",
+                ),
+                "p",
+                None,
+                Span {
+                    pos: Pos {
+                        line: 1,
+                        col: 40,
+                        offset: 39,
+                    },
+                    end: 49,
+                },
+            ),
+        ),
+        Stmt(
+            ExprStmt(
+                Assign(
+                    Member(
+                        Ident(
+                            "p",
+                            Span {
+                                pos: Pos {
+                                    line: 1,
+                                    col: 49,
+                                    offset: 48,
+                                },
+                                end: 49,
+                            },
+                        ),
+                        "x",
+                        Span {
+                            pos: Pos {
+                                line: 1,
+                                col: 49,
+                                offset: 48,
+                            },
+                            end: 53,
+                        },
+                    ),
+                    Set,
+                    LitInt(
+                        3,
+                        Span {
+                            pos: Pos {
+                                line: 1,
+                                col: 55,
+                                offset: 54,
+                            },
+                            end: 55,
+                        },
+                    ),
+                    Span {
+                        pos: Pos {
+                            line: 1,
+                            col: 49,
+                            offset: 48,
+                        },
+                        end: 56,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 1,
+                        col: 49,
+                        offset: 48,
+                    },
+                    end: 56,
+                },
+            ),
+        ),
+    ],
+}

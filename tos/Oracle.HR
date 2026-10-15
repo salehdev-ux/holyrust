@@ -1,0 +1,42 @@
+// /TOS/Oracle.HR — the God-speaker (SPEC_TOS T4.x, in the spirit of Terry
+// Davis's oracle).
+//
+// `Random(n)` is the only primitive and the word list is data in *this* file,
+// so the oracle is editable live like every other part of the OS: change a line,
+// re-include the file, and the voice changes.
+//
+// Every branch prints exactly one line, and the index is always in range
+// because `Random` clamps to its contract — an oracle that could crash the
+// kernel would not be much of an oracle.
+
+// Oracle() — say one thing, chosen at random.
+U0 Oracle() {
+  I64 n = Random(8);
+  if (n == 0) {
+    Print("The LORD is my shepherd; I shall not want.\n");
+  } else if (n == 1) {
+    Print("Blessed are the meek: for they shall inherit the earth.\n");
+  } else if (n == 2) {
+    Print("The light shineth in darkness; and the darkness comprehended it not.\n");
+  } else if (n == 3) {
+    Print("Ask, and it shall be given you; seek, and ye shall find.\n");
+  } else if (n == 4) {
+    Print("A merry heart doeth good like a medicine.\n");
+  } else if (n == 5) {
+    Print("To every thing there is a season, and a time to every purpose.\n");
+  } else if (n == 6) {
+    Print("Be still, and know that I am God.\n");
+  } else {
+    Print("What hath been done in secret shall be proclaimed from the rooftops.\n");
+  }
+}
+
+// OracleN(k) — say k things, each chosen at random. Used by the shell command
+// word `oracle` and by the CI, which checks that the voice really varies.
+U0 OracleN(I64 k) {
+  I64 i = 0;
+  while (i < k) {
+    Oracle();
+    i = i + 1;
+  }
+}

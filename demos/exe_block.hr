@@ -1,0 +1,13 @@
+// exe_block.hr — L7: #exe {} executes at COMPILE time; its printed output is
+// spliced back into the program as source text (uses L5 auto-print inside).
+#exe {
+  "I64 Square(I64 i) { switch (i) {\n";
+  for (I64 k = 0; k < 8; k++) {
+    Print("  case ", k, ": return ", k * k, ";\n");
+  }
+  "  default: return -1; } }\n";
+}
+
+"compile-time-generated squares: ";
+for (I64 i = 0; i < 8; i++) { Print(Square(i), " "); }
+"\n";

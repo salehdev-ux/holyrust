@@ -1,0 +1,25 @@
+[package]
+name = "holyrust"
+version = "0.1.0"
+edition = "2021"
+description = "HolyRust: Rust-style memory safety + TempleOS-style liveness. Self-contained JIT language."
+
+[lib]
+name = "holyrust"
+path = "src/lib.rs"
+
+[[bin]]
+name = "hr"
+path = "src/main.rs"
+required-features = ["host"]
+
+[features]
+default = ["host"]
+# host = std streams, worker thread, mmap. Disabled for the in-kernel build (P6b).
+host = []
+
+[dependencies]
+# Zero external dependencies — SPEC.md §1.1(3) and Principle 5. See DECISIONS.md D005.
+
+[profile.release]
+debug = false

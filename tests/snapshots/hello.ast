@@ -1,0 +1,155 @@
+Program {
+    items: [
+        Stmt(
+            ExprStmt(
+                LitStr(
+                    "Hello, world\n",
+                    Span {
+                        pos: Pos {
+                            line: 4,
+                            col: 1,
+                            offset: 162,
+                        },
+                        end: 178,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 4,
+                        col: 1,
+                        offset: 162,
+                    },
+                    end: 184,
+                },
+            ),
+        ),
+        Fn(
+            FnDef {
+                ret: I64,
+                name: "Answer",
+                params: [],
+                variadic: false,
+                body: [
+                    Return(
+                        Some(
+                            Binary(
+                                Mul,
+                                LitInt(
+                                    6,
+                                    Span {
+                                        pos: Pos {
+                                            line: 6,
+                                            col: 23,
+                                            offset: 203,
+                                        },
+                                        end: 204,
+                                    },
+                                ),
+                                LitInt(
+                                    7,
+                                    Span {
+                                        pos: Pos {
+                                            line: 6,
+                                            col: 27,
+                                            offset: 207,
+                                        },
+                                        end: 208,
+                                    },
+                                ),
+                                Span {
+                                    pos: Pos {
+                                        line: 6,
+                                        col: 23,
+                                        offset: 203,
+                                    },
+                                    end: 209,
+                                },
+                            ),
+                        ),
+                        Span {
+                            pos: Pos {
+                                line: 6,
+                                col: 16,
+                                offset: 196,
+                            },
+                            end: 211,
+                        },
+                    ),
+                ],
+                span: Span {
+                    pos: Pos {
+                        line: 6,
+                        col: 1,
+                        offset: 181,
+                    },
+                    end: 218,
+                },
+            },
+        ),
+        Stmt(
+            ExprStmt(
+                Call(
+                    "Print",
+                    [
+                        Some(
+                            LitStr(
+                                "The answer is ",
+                                Span {
+                                    pos: Pos {
+                                        line: 8,
+                                        col: 7,
+                                        offset: 219,
+                                    },
+                                    end: 235,
+                                },
+                            ),
+                        ),
+                        Some(
+                            Call(
+                                "Answer",
+                                [],
+                                Span {
+                                    pos: Pos {
+                                        line: 8,
+                                        col: 25,
+                                        offset: 237,
+                                    },
+                                    end: 246,
+                                },
+                            ),
+                        ),
+                        Some(
+                            LitStr(
+                                "\n",
+                                Span {
+                                    pos: Pos {
+                                        line: 8,
+                                        col: 35,
+                                        offset: 247,
+                                    },
+                                    end: 251,
+                                },
+                            ),
+                        ),
+                    ],
+                    Span {
+                        pos: Pos {
+                            line: 8,
+                            col: 1,
+                            offset: 213,
+                        },
+                        end: 253,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 8,
+                        col: 1,
+                        offset: 213,
+                    },
+                    end: 254,
+                },
+            ),
+        ),
+    ],
+}

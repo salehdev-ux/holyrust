@@ -1,0 +1,33 @@
+// kernel_sim.hr — Phase 6 flagship demo (host-side simulation per the SPEC
+// risk note / D016 / Q5). A "kernel" event loop processes scripted keystrokes;
+// MID-LOOP we live-edit the KbdEcho driver via HotPatch: recompile + atomic
+// function-pointer swap. The system keeps running, state is preserved, and
+// heap integrity is verified before and after the edit.
+
+I64 KbdEcho(I64 c) {
+  Print("[echo-v1] key ", c, "\n");
+  return 0;
+}
+
+// scripted "keyboard interrupts" (simulated PS/2 scancodes for h, i, !, ?)
+SimPush(104);
+SimPush(105);
+SimPush(33);
+SimPush(63);
+
+Print("kernel: heap integrity pre-boot = ", HeapCheck(), "\n");
+"kernel: boot complete, pumping events...\n";
+
+I64 c = 0;
+I64 processed = 0;
+while ((c = SimKey()) != -1) {
+  KbdEcho(c);
+  processed = processed + 1;
+  if (processed == 2) {
+    "kernel: >>> live-editing KbdEcho while the event loop runs <<<\n";
+    I64 rc = HotPatch("I64 KbdEcho(I64 c) { Print(\"[ECHO-v2!!] key \", c, \" (patched live)\\n\"); return 0; }");
+    Print("kernel: hot-patch rc = ", rc, "\n");
+  }
+}
+Print("kernel: heap integrity post-patch = ", HeapCheck(), "\n");
+Print("kernel: still running — processed ", processed, " keys, no reboot\n");

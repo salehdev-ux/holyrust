@@ -1,0 +1,82 @@
+// /TOS/Shell.HR — the command processor of TempleOS-RS (SPEC_TOS T1.4).
+//
+// This replaces the *policy* half of the v1 "C-era" shell. The Rust host keeps
+// only the two things a JIT host must own — reading a line, and compiling it —
+// while every command name, alias and message below is HolyRust that can be
+// edited live. `Sh(word)` is what the kernel calls when a bare command word is
+// typed at the prompt; anything else is HolyRust source and goes straight to
+// the compiler (so `Dir("/TOS/*.HR");` works without going through here).
+//
+// `Sh` compares one word against several literals. That is only possible
+// because `StrEq` is a *builtin*, which never moves its arguments; a HolyRust
+// `StrEq` would consume `word` on the first comparison and every later branch
+// would read a moved value (docs/PROGRESS.md TOS-P1.2).
+//
+// Commands that take an argument are the functions themselves, e.g.
+//   Cat("/TOS/Files.HR");
+// Making `cat /TOS/Files.HR` (unquoted, space-separated) work would need
+// building new `Str` values in HolyRust, which v1 has no primitives for —
+// documented in docs/FUTURE_IDEAS.md F18 rather than faked.
+
+U0 Help() {
+  Print("TempleOS-RS — the OS is written in itself; every command is HolyRust\n");
+  Print("  help                 this text\n");
+  Print("  ls                   list every file in the namespace\n");
+  Print("  files                list the OS's own source (/TOS/*)\n");
+  Print("  docs                 list the OS's documentation (/TOS/Doc/*)\n");
+  Print("  demo                 switch to 640x480x16 and draw the self-test\n");
+  Print("  beep                 play a scale on the PC speaker\n");
+  Print("  oracle               let the OS speak (random verse)\n");
+  Print("  edshow / edsave      show the edit buffer / write it back\n");
+  Print("  flight               fly over the wireframe pyramids (Phase 7)\n");
+  Print("  ---- or call the layers directly ----\n");
+  Print("  Dir(\"pat\")            list entries matching a glob (one '*')\n");
+  Print("  Cat(\"path\")           print a file\n");
+  Print("  FWrite(\"p\",\"text\")    create or overwrite a file\n");
+  Print("  FRead(\"path\")         read a file\n");
+  Print("  FDel(\"path\")          delete a file\n");
+  Print("  Exists(\"path\")        is it there?\n");
+  Print("  Size(\"path\")          byte length, -1 when absent\n");
+  Print("  Count()              how many entries exist\n");
+  Print("  GfxInit()            enter graphics mode (640x480x16)\n");
+  Print("  Plot(x,y,c)          one pixel;   GfxChar(x,y,c,ch)  one glyph\n");
+  Print("  Line/Rect/FillRect/Circle/FillCircle(x..,color)\n");
+  Print("  TextOut(x,y,color,\"s\")  8x8 text in graphics mode\n");
+  Print("  Sleep(ms) Time() Date()   clock: delay, ms since boot, YYYYMMDD\n");
+  Print("  MouseInit() MouseX() MouseY()   pointing device\n");
+  Print("  Beep(hz,ms) SoundOff() Random(n)  speaker and entropy\n");
+  Print("  Music(hz,...) Scale() Fanfare()   tunes in /TOS/Sound.HR\n");
+  Print("  Oracle() OracleN(k)             the God-speaker\n");
+  Print("  Ed(\"p\") EdShow() EdReplaceLine(f,t) EdSave()  the editor\n");
+  Print("  #include \"path\"                 splice a file into this unit\n");
+  Print("  Flight(n) FlightStep() FlightExit()  the simulator, frame by frame\n");
+  Print("Anything else you type is compiled and executed as HolyRust.\n");
+}
+
+// Sh(word) — dispatch a bare command word from the prompt. An unknown word is
+// diagnosed, never silently ignored (SPEC_TOS Part 0 rule 4).
+U0 Sh(Str word) {
+  if (StrEq(word, "help") == 1) {
+    Help();
+  } else if (StrEq(word, "ls") == 1) {
+    Dir("*");
+  } else if (StrEq(word, "files") == 1) {
+    Dir("/TOS/*");
+  } else if (StrEq(word, "docs") == 1) {
+    Dir("/TOS/Doc/*");
+  } else if (StrEq(word, "demo") == 1) {
+    GfxDemo();
+  } else if (StrEq(word, "beep") == 1) {
+    Scale();
+  } else if (StrEq(word, "oracle") == 1) {
+    Oracle();
+  } else if (StrEq(word, "edshow") == 1) {
+    EdShow();
+  } else if (StrEq(word, "edsave") == 1) {
+    EdSaveAndReport();
+  } else if (StrEq(word, "flight") == 1) {
+    Flight(240);
+  } else {
+    Print("shell: unknown command `", word, "` — try `help`\n");
+  }
+}

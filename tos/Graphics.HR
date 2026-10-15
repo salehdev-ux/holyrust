@@ -1,0 +1,151 @@
+// /TOS/Graphics.HR — the drawing layer of TempleOS-RS (SPEC_TOS T2.2).
+//
+// The ONLY display operations in Rust are GfxInit / GfxClear / Plot / GfxChar.
+// Every shape below is HolyRust, so the OS's graphics vocabulary is editable
+// like any other file — the same storage-vs-policy split as /TOS/Files.HR
+// (SPEC_TOS §2.3). `Line`, `Rect`, `Circle` and `TextOut` are therefore
+// *builtins from the guest's point of view* even though they are guest code.
+//
+// Mode 12h is 640x480 with 16 colours. The palette is the standard EGA/VGA
+// order: 0 black, 1 blue, 2 green, 3 cyan, 4 red, 5 magenta, 6 brown,
+// 7 light grey, 8 dark grey, 9 light blue, 10 light green, 11 light cyan,
+// 12 light red, 13 light magenta, 14 yellow, 15 white.
+
+I64 SCRW = 640;
+I64 SCRH = 480;
+
+// A horizontal run of pixels. `len` is the number of pixels AFTER the start
+// pixel, matching Line()/Rect() conventions in this file.
+U0 HLine(I64 x, I64 y, I64 len, I64 color) {
+  I64 i = 0;
+  while (i <= len) {
+    Plot(x + i, y, color);
+    i = i + 1;
+  }
+}
+
+// Bresenham, integer-only: no floating point anywhere in the drawing layer.
+U0 Line(I64 x0, I64 y0, I64 x1, I64 y1, I64 color) {
+  I64 dx = x1 - x0;
+  if (dx < 0) { dx = 0 - dx; }
+  I64 dy = y1 - y0;
+  if (dy < 0) { dy = 0 - dy; }
+  I64 sx = 1;
+  if (x0 > x1) { sx = 0 - 1; }
+  I64 sy = 1;
+  if (y0 > y1) { sy = 0 - 1; }
+  I64 err = dx - dy;
+  while (1) {
+    Plot(x0, y0, color);
+    I64 done = 0;
+    if (x0 == x1) {
+      if (y0 == y1) { done = 1; }
+    }
+    if (done == 1) { break; }
+    I64 e2 = 2 * err;
+    if (e2 > (0 - dy)) {
+      err = err - dy;
+      x0 = x0 + sx;
+    }
+    if (e2 < dx) {
+      err = err + dx;
+      y0 = y0 + sy;
+    }
+  }
+}
+
+// Rectangle outline from the top-left corner, `w` x `h` pixels.
+U0 Rect(I64 x, I64 y, I64 w, I64 h, I64 color) {
+  Line(x, y, x + w, y, color);
+  Line(x + w, y, x + w, y + h, color);
+  Line(x + w, y + h, x, y + h, color);
+  Line(x, y + h, x, y, color);
+}
+
+// Filled rectangle.
+U0 FillRect(I64 x, I64 y, I64 w, I64 h, I64 color) {
+  I64 j = 0;
+  while (j <= h) {
+    HLine(x, y + j, w, color);
+    j = j + 1;
+  }
+}
+
+// Midpoint circle outline: eight-way symmetry, integer error term.
+U0 Circle(I64 cx, I64 cy, I64 r, I64 color) {
+  I64 x = r;
+  I64 y = 0;
+  I64 err = 1 - r;
+  while (x >= y) {
+    Plot(cx + x, cy + y, color);
+    Plot(cx + y, cy + x, color);
+    Plot(cx - y, cy + x, color);
+    Plot(cx - x, cy + y, color);
+    Plot(cx - x, cy - y, color);
+    Plot(cx - y, cy - x, color);
+    Plot(cx + y, cy - x, color);
+    Plot(cx + x, cy - y, color);
+    y = y + 1;
+    if (err < 0) {
+      err = err + 2 * y + 1;
+    } else {
+      x = x - 1;
+      err = err + 2 * (y - x) + 1;
+    }
+  }
+}
+
+// Filled circle: horizontal spans between the symmetric octant points.
+U0 FillCircle(I64 cx, I64 cy, I64 r, I64 color) {
+  I64 x = r;
+  I64 y = 0;
+  I64 err = 1 - r;
+  while (x >= y) {
+    HLine(cx - x, cy + y, 2 * x, color);
+    HLine(cx - x, cy - y, 2 * x, color);
+    HLine(cx - y, cy + x, 2 * y, color);
+    HLine(cx - y, cy - x, 2 * y, color);
+    y = y + 1;
+    if (err < 0) {
+      err = err + 2 * y + 1;
+    } else {
+      x = x - 1;
+      err = err + 2 * (y - x) + 1;
+    }
+  }
+}
+
+// Print a Str at (x, y) in 8x8 cells. Bounded by StrLen: `Str[i]` traps at
+// `i == len`, so the NUL terminator is never read (see /TOS/Files.HR).
+U0 TextOut(I64 x, I64 y, I64 color, Str text) {
+  I64 n = StrLen(text);
+  I64 i = 0;
+  while (i < n) {
+    GfxChar(x + i * 8, y, color, text[i]);
+    i = i + 1;
+  }
+}
+
+// Centre a Str horizontally on the screen at row `y`.
+U0 TextCentered(I64 y, I64 color, Str text) {
+  I64 w = StrLen(text) * 8;
+  TextOut((SCRW - w) / 2, y, color, text);
+}
+
+// The OS's graphics self-test: drive it from the shell with `demo`, and the CI
+// screendump asserts against the exact pixels it leaves behind.
+U0 GfxDemo() {
+  GfxClear(0);
+  FillRect(0, 0, 639, 32, 1); // blue banner
+  TextOut(8, 12, 15, "TempleOS-RS 640x480x16");
+  Rect(24, 64, 240, 130, 12);
+  Line(24, 208, 300, 300, 10);
+  Line(300, 208, 24, 300, 10);
+  Circle(480, 140, 90, 14);
+  FillCircle(480, 340, 40, 5);
+  TextOut(24, 380, 11, "graphics from HolyRust source");
+  Plot(600, 440, 4);
+  Plot(601, 440, 4);
+  Plot(600, 441, 4);
+  Plot(601, 441, 4);
+}

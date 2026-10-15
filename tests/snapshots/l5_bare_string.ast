@@ -1,0 +1,27 @@
+Program {
+    items: [
+        Stmt(
+            ExprStmt(
+                LitStr(
+                    "hi\n",
+                    Span {
+                        pos: Pos {
+                            line: 1,
+                            col: 1,
+                            offset: 0,
+                        },
+                        end: 6,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 1,
+                        col: 1,
+                        offset: 0,
+                    },
+                    end: 7,
+                },
+            ),
+        ),
+    ],
+}

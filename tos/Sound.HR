@@ -1,0 +1,63 @@
+// /TOS/Sound.HR — the PC speaker's voice (SPEC_TOS T4.x).
+//
+// `Beep(freq, ms)` is the only primitive; every note, rest and tune below is
+// HolyRust. The kernel logs each tone to the console and to serial before it
+// waits, so a headless CI can verify exactly what was programmed even though it
+// cannot hear anything (G4's "at least a serial log of frequency changes").
+
+// Note frequencies in Hz (equal temperament, A4 = 440).
+I64 C4 = 262;
+I64 D4 = 294;
+I64 E4 = 330;
+I64 F4 = 349;
+I64 G4 = 392;
+I64 A4 = 440;
+I64 B4 = 494;
+I64 C5 = 523;
+
+// Music(...) — play one frequency per variadic argument, 150 ms each.
+// `argc`/`argv` are the language's variadic view (LANG_SPEC §5 / D020).
+U0 Music(...) {
+  I64 i = 0;
+  while (i < argc) {
+    Beep(argv[i], 150);
+    i = i + 1;
+  }
+}
+
+// Rest(ms) — an explicit silence.
+U0 Rest(I64 ms) {
+  SoundOff();
+  Sleep(ms);
+}
+
+// Scale() — do-re-mi; the audible self-test behind the `beep` command word.
+U0 Scale() {
+  Beep(C4, 150);
+  Beep(D4, 150);
+  Beep(E4, 150);
+  Beep(F4, 150);
+  Beep(G4, 150);
+  Beep(A4, 150);
+  Beep(B4, 150);
+  Beep(C5, 300);
+}
+
+// Fanfare() — a short rising triad.
+U0 Fanfare() {
+  Beep(C4, 120);
+  Beep(E4, 120);
+  Beep(G4, 120);
+  Beep(C5, 360);
+}
+
+// Chirp() — a sweep, to show arbitrary frequencies are reachable, not just
+// the named notes above.
+U0 Chirp() {
+  I64 f = 200;
+  while (f <= 1200) {
+    Beep(f, 20);
+    f = f + 100;
+  }
+  SoundOff();
+}

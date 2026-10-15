@@ -1,0 +1,88 @@
+// tour.hr — a guided tour of HolyRust v1.
+//
+//   hr demos/tour.hr
+//
+// Every section is a feature defined in docs/LANG_SPEC.md; if it is not in that
+// document, it is not in the language. Section numbers below are LANG_SPEC §.
+
+// ---- 1. There is no main(). Top-level statements run in order, and a bare
+//         string statement auto-prints (L4/L5, HolyC style).
+"Hello from a bare string literal.\n";
+
+// ---- 2. Types (L1): U0, U8..U64, I8..I64, F64, Str, class.
+I64 count = 42;
+F64 ratio = 1.5;
+Print("count=", count, " ratio=", ratio, "\n");
+
+// ---- 3. Default arguments at ANY position (L2). Omit one with an empty slot.
+I64 Digits(I64 a = 1, I64 b = 2) { return a * 10 + b; }
+Print("Digits()=", Digits(), "  Digits(,6)=", Digits(,6), "  Digits(9)=", Digits(9), "\n");
+
+// ---- 4. Variadics (L3): `...` gives you implicit argc/argv inside the body.
+I64 Sum(...) {
+  I64 total = 0;
+  for (I64 i = 0; i < argc; i++) { total += argv[i]; }
+  return total;
+}
+Print("Sum(1,2,3,4)=", Sum(1,2,3,4), "\n");
+
+// ---- 5. switch (L6): no fallthrough, comma lists and inclusive ranges.
+U0 Size(I64 v) {
+  switch (v) {
+    case 0:        Print("zero\n");
+    case 1...5:    Print("small\n");
+    case 6, 8, 10: Print("even-ish\n");
+    default:       Print("other\n");
+  }
+}
+Size(0);
+Size(3);
+Size(8);
+Size(99);
+
+// ---- 6. Loops and recursion.
+I64 acc = 0;
+for (I64 i = 1; i <= 5; i++) { acc += i; }
+while (acc > 12) { acc -= 5; }
+Print("acc=", acc, "\n");
+
+I64 Fact(I64 n) { if (n <= 1) { return 1; } return n * Fact(n - 1); }
+Print("5!=", Fact(5), "\n");
+
+// ---- 7. class: a value type (L11/L10).
+class Point { I64 x; I64 y; };
+Point p;
+p.x = 3;
+p.y = 4;
+Print("point ", p.x, ",", p.y, "\n");
+
+// ---- 8. Runtime ownership (L8). `Str` and `class` are Move types: assigning
+//         one transfers it and invalidates the source AT RUNTIME. The trap is a
+//         diagnostic, and diagnostics are catchable (L9) — the session survives.
+Str a = "owned\n";
+Str b = a;                              // `a` is now invalid
+try {
+  Print(a);                             // use-after-move
+} catch {
+  Print("caught: ", catch_msg, "\n");
+}
+Print("b still works: ", b);            // literals are immortal; b owns the value
+
+// ---- 9. Borrows (L9): one mutable XOR many immutable, enforced at runtime.
+I64 n = 5;
+I64 *shared = &n;                       // shared borrow
+Print("via shared borrow: ", *shared, "\n");
+try {
+  I64 *excl = &mut n;                   // exclusive while a shared borrow is live
+} catch {
+  Print("caught: ", catch_msg, "\n");
+}
+unsafe { *shared = 9; }                 // L11: unsafe disables runtime checks
+Print("after unsafe write: ", n, "\n");
+
+// ---- 10. #exe {} (L7): a block that runs at COMPILE time; whatever it prints
+//          is spliced back into the program as source text.
+#exe {
+  "I64 Six() { return 6; }\n";
+}
+Print("code generated at compile time -> Six()=", Six(), "\n");

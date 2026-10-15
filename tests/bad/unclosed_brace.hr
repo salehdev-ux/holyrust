@@ -1,0 +1,2 @@
+I64 f() {
+  "never closed\n";

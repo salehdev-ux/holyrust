@@ -1,0 +1,8 @@
+// hello.hr — HolyRust hello world.
+// L4: top-level statements execute the moment they are written (no main()).
+// L5: a bare string expression prints itself.
+"Hello, world\n";
+
+I64 Answer() { return 6 * 7; }
+
+Print("The answer is ", Answer(), "\n");

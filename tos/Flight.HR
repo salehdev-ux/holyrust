@@ -1,0 +1,293 @@
+// /TOS/Flight.HR — AfterEgypt-style wireframe flight (Phase 7 / F20).
+//
+// Guest code only. The drawing vocabulary is /TOS/Graphics.HR (Line, Rect,
+// FillRect, TextOut) on top of the Gfx builtins; nothing here needs a new
+// primitive, and nothing here is Rust.
+//
+// You fly over a field of wireframe pyramids. Mouse X banks (roll), mouse Y
+// pitches; `w`/`s` work the throttle, `space` levels out, `r` resets, `q` lands
+// and returns to the shell. The horizon tilts with roll and drops with pitch:
+// that is the whole illusion, and it is what the CI asserts.
+//
+// The sim is deliberately *frame-driven*: `FlightStep()` renders exactly one
+// frame and returns. A cooperative OS with no scheduler should not own the
+// machine forever, and step-by-step frames are also what make the whole thing
+// testable from a script (each frame is one observable unit of work). The CI
+// uses the steps; a human uses `flight`, which loops them.
+
+// ---- trigonometry ---------------------------------------------------------
+// Guest code has no libm, but F64 is a real type (L1/D018), so this is actual
+// floating-point maths rather than a fixed-point approximation.
+// Range-reduce to [-pi/2, pi/2], then a 7th-order series; the error is below
+// 2e-4, which is far finer than a 640x480 wireframe can show.
+
+F64 PI = 3.14159265358979;
+F64 TWO_PI = 6.28318530717959;
+F64 HALF_PI = 1.57079632679490;
+F64 NEG_PI = 0.0 - 3.14159265358979;
+F64 NEG_HALF_PI = 0.0 - 1.57079632679490;
+
+F64 Sin(F64 x) {
+  while (x > PI) { x = x - TWO_PI; }
+  while (x < NEG_PI) { x = x + TWO_PI; }
+  if (x > HALF_PI) { x = PI - x; }
+  if (x < NEG_HALF_PI) { x = NEG_PI - x; }
+  F64 x2 = x * x;
+  return x * (1.0 - x2 / 6.0 * (1.0 - x2 / 20.0 * (1.0 - x2 / 42.0)));
+}
+
+F64 Cos(F64 x) {
+  return Sin(x + HALF_PI);
+}
+
+// ---- aircraft and world state (globals: one simulator runs at a time) ------
+
+F64 fX = 0.0;      // world position in metres
+F64 fZ = 0.0;
+F64 fY = 90.0;     // altitude
+F64 fYaw = 0.0;    // radians; 0 flies toward +Z
+F64 fPitch = 0.0;
+F64 fRoll = 0.0;
+F64 fSpeed = 55.0;
+I64 fThr = 50;     // 0..100
+I64 fPmx = 0;      // previous mouse sample (control is relative)
+I64 fPmy = 0;
+I64 fFrame = 0;
+I64 fReady = 0;
+
+// Screen geometry and tuning.
+I64 FCX = 320;
+I64 FCY = 240;
+F64 FOCAL = 430.0;          // projection scale
+F64 DT = 0.033;             // seconds per frame
+F64 ROLL_RATE = 0.0040;     // radians per mouse pixel
+F64 PITCH_RATE = 0.0030;
+F64 TURN_RATE = 0.55;       // banked-turn coupling
+I64 COL_HORIZON = 9;        // light blue, used by nothing else (CI finds it)
+I64 COL_GROUND = 6;
+I64 COL_SKY = 8;
+I64 COL_PYRAMID = 14;
+I64 COL_HUD = 15;
+
+// The horizon in screen space, recomputed each frame from pitch and roll.
+I64 fHor = 240;
+F64 fDirX = 1.0;            // unit direction along the horizon
+F64 fDirY = 0.0;
+
+// ---- projection -----------------------------------------------------------
+// A world point is rotated by the aircraft's heading, projected, then pitch is
+// applied as a vertical shift and roll as a rotation about the screen centre.
+// That is not a full 3x3 camera matrix, but it is exactly enough for a horizon
+// that tilts and drops, and it keeps the arithmetic readable.
+
+I64 fSx = 0;
+I64 fSy = 0;
+I64 fVisible = 0;
+
+U0 Project(F64 wx, F64 wy, F64 wz) {
+  F64 dx = wx - fX;
+  F64 dz = wz - fZ;
+  F64 sy = Sin(fYaw);
+  F64 cy = Cos(fYaw);
+  F64 rx = dx * cy - dz * sy;      // camera-space right
+  F64 rz = dx * sy + dz * cy;      // camera-space forward
+  if (rz < 3.0) {
+    fVisible = 0;                  // behind the aircraft, or on the lens
+    return;
+  }
+  F64 invz = FOCAL / rz;
+  F64 px = rx * invz;
+  F64 py = (fY - wy) * invz;
+  // roll: rotate the view about the screen centre
+  F64 sr = Sin(fRoll);
+  F64 cr = Cos(fRoll);
+  F64 qx = px * cr - py * sr;
+  F64 qy = px * sr + py * cr;
+  // pitch: the nose going up moves the world down the screen
+  fSx = FCX + (I64)qx;
+  fSy = FCY + (I64)qy + (I64)(Sin(fPitch) * 380.0);
+  fVisible = 1;
+}
+
+U0 WorldLine(F64 ax, F64 ay, F64 az, F64 bx, F64 by, F64 bz, I64 col) {
+  Project(ax, ay, az);
+  if (fVisible == 0) { return; }
+  I64 x1 = fSx;
+  I64 y1 = fSy;
+  Project(bx, by, bz);
+  if (fVisible == 0) { return; }
+  Line(x1, y1, fSx, fSy, col);
+}
+
+// ---- the desert -----------------------------------------------------------
+
+U0 Pyramid(F64 px, F64 pz, F64 w, F64 h) {
+  WorldLine(px - w, 0.0, pz - w, px + w, 0.0, pz - w, COL_PYRAMID);
+  WorldLine(px + w, 0.0, pz - w, px + w, 0.0, pz + w, COL_PYRAMID);
+  WorldLine(px + w, 0.0, pz + w, px - w, 0.0, pz + w, COL_PYRAMID);
+  WorldLine(px - w, 0.0, pz + w, px - w, 0.0, pz - w, COL_PYRAMID);
+  WorldLine(px - w, 0.0, pz - w, px, h, pz, COL_PYRAMID);
+  WorldLine(px + w, 0.0, pz - w, px, h, pz, COL_PYRAMID);
+  WorldLine(px + w, 0.0, pz + w, px, h, pz, COL_PYRAMID);
+  WorldLine(px - w, 0.0, pz + w, px, h, pz, COL_PYRAMID);
+}
+
+// A 3x3 field of pyramids ahead of the start point. Procedural rather than a
+// table because v1 has no arrays (F1), and a grid is easier to read anyway.
+U0 Scene() {
+  I64 gz = 0;
+  while (gz < 3) {
+    I64 gx = 0;
+    while (gx < 3) {
+      F64 px = (gx - 1) * 150.0;
+      F64 pz = 120.0 + gz * 190.0;
+      Pyramid(px, pz, 34.0, 68.0);
+      gx = gx + 1;
+    }
+    gz = gz + 1;
+  }
+}
+
+// ---- the horizon ----------------------------------------------------------
+
+U0 ComputeHorizon() {
+  fHor = FCY + (I64)(Sin(fPitch) * -380.0);
+  fDirX = Cos(fRoll);
+  fDirY = Sin(fRoll);
+}
+
+// A line parallel to the horizon, `d` pixels below it (negative = above).
+// The offset is taken perpendicular to the horizon so banked ground lines stay
+// parallel to it instead of fanning out.
+U0 HorizonLineAt(I64 d, I64 col) {
+  F64 px = FCX + (0.0 - fDirY) * d;
+  F64 py = fHor + fDirX * d;
+  I64 x1 = (I64)px - (I64)(600.0 * fDirX);
+  I64 y1 = (I64)py - (I64)(600.0 * fDirY);
+  I64 x2 = (I64)px + (I64)(600.0 * fDirX);
+  I64 y2 = (I64)py + (I64)(600.0 * fDirY);
+  Line(x1, y1, x2, y2, col);
+}
+
+// ---- instruments ----------------------------------------------------------
+
+U0 Hud() {
+  TextOut(8, 8, COL_HUD, "F L I G H T");
+  TextOut(8, 446, COL_HUD, "THR");
+  Rect(40, 444, 104, 14, 7);
+  if (fThr > 0) { FillRect(41, 445, fThr, 12, 10); }
+  TextOut(180, 446, COL_HUD, "ALT");
+  Rect(212, 444, 104, 14, 7);
+  I64 alt = (I64)(fY / 4.0);           // 0..100 px for 0..400 m
+  if (alt > 100) { alt = 100; }
+  if (alt > 0) { FillRect(213, 445, alt, 12, 9); }
+  TextOut(360, 446, COL_HUD, "W/S THR  SPACE LEVEL  R RESET  Q QUIT");
+}
+
+// ---- state, frame, and the entry points -----------------------------------
+
+U0 FlightReset() {
+  fX = 0.0;
+  fZ = 0.0 - 120.0;
+  fY = 90.0;
+  fYaw = 0.0;
+  fPitch = 0.0;
+  fRoll = 0.0;
+  fThr = 50;
+  fSpeed = 55.0;
+  fFrame = 0;
+  fPmx = MouseX();
+  fPmy = MouseY();
+}
+
+// Read input, integrate, render. One frame, no waiting: the sim is cooperative,
+// and a frame is the unit a script can observe.
+U0 FlightStep() {
+  if (fReady == 0) { FlightInit(); }
+
+  // --- controls: mouse deltas steer, keys work the throttle ---
+  I64 mx = MouseX();
+  I64 my = MouseY();
+  fRoll = fRoll + (mx - fPmx) * ROLL_RATE;
+  fPitch = fPitch + (my - fPmy) * PITCH_RATE;
+  fPmx = mx;
+  fPmy = my;
+  if (fRoll > 1.2) { fRoll = 1.2; }
+  if (fRoll < 0.0 - 1.2) { fRoll = 0.0 - 1.2; }
+  if (fPitch > 0.9) { fPitch = 0.9; }
+  if (fPitch < 0.0 - 0.9) { fPitch = 0.0 - 0.9; }
+
+  I64 k = SimKey();
+  while (k != -1) {
+    if (k == 119) { fThr = fThr + 5; }        // w
+    if (k == 115) { fThr = fThr - 5; }        // s
+    if (k == 32) { fPitch = 0.0; fRoll = 0.0; } // space: level the wings
+    if (k == 114) { FlightReset(); }          // r
+    if (k == 113) { fReady = 0; }             // q: land, back to the shell
+    k = SimKey();
+  }
+  if (fThr > 100) { fThr = 100; }
+  if (fThr < 0) { fThr = 0; }
+
+  // --- integrate ---
+  fSpeed = 20.0 + fThr * 0.7;
+  fX = fX + Sin(fYaw) * fSpeed * DT;
+  fZ = fZ + Cos(fYaw) * fSpeed * DT;
+  fY = fY + Sin(fPitch) * fSpeed * DT;
+  if (fY < 8.0) { fY = 8.0; }                 // do not fly underground
+  fYaw = fYaw + fRoll * TURN_RATE * DT;       // banked turn
+  fFrame = fFrame + 1;
+
+  // --- render ---
+  ComputeHorizon();
+  GfxClear(0);
+  I64 i = 1;
+  while (i <= 3) {
+    HorizonLineAt(0 - i * 70, COL_SKY);
+    i = i + 1;
+  }
+  i = 1;
+  while (i <= 4) {
+    HorizonLineAt(i * 55, COL_GROUND);
+    i = i + 1;
+  }
+  HorizonLineAt(0, COL_HORIZON);
+  Scene();
+  Hud();
+
+  // After the clear the cursor has to be repainted for this frame; reading the
+  // position is what samples the device and redraws it.
+  MouseX();
+}
+
+U0 FlightInit() {
+  FlightReset();
+  GfxInit();
+  GfxClear(0);
+  fReady = 1;
+  Print("flight: ready - W/S throttle, SPACE level, R reset, Q quit\n");
+}
+
+// n frames, as fast as the machine allows. Deliberately unpaced: v1 has no
+// scheduler, and the polled clock's granularity (D051) makes per-frame sleeps
+// far less accurate than simply flying.
+U0 FlightRun(I64 n) {
+  I64 i = 0;
+  while (i < n) {
+    if (fReady == 0) { break; }
+    FlightStep();
+    i = i + 1;
+  }
+  Print("flight: done after ", fFrame, " frames, throttle ", fThr, "\n");
+}
+
+// The interactive entry (`flight` at the prompt).
+U0 Flight(I64 n) {
+  FlightInit();
+  FlightRun(n);
+}
+
+U0 FlightExit() {
+  fReady = 0;
+  Print("flight: landed\n");
+}

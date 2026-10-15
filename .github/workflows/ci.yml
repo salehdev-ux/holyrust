@@ -1,0 +1,83 @@
+name: CI
+
+# Two jobs, deliberately different in strictness.
+#
+#   host   — the 110-test suite. Required. This is the gate.
+#   kernel — boots the real kernel in QEMU and asserts on screendump pixels.
+#            Non-blocking, and that is a considered choice, not laziness.
+#
+# Why the kernel job is non-blocking: its boot gate is "< 5 s to the shell", and
+# that number is host-dependent. On the machine this was developed on the same
+# kernel measured 1.8 s to 4.7 s across runs, and exceeded 5 s once when the host
+# was busy — because under emulation a descheduled VM simply takes longer. A
+# shared GitHub runner is exactly that situation. Failing every push on emulator
+# scheduling would train people to ignore the badge, so the job runs, reports,
+# and does not block.
+#
+# The Linux paths exercised here (kernel/build.sh, and cargo test on Linux) were
+# NOT executed during development — that was done on Windows via tools/cargo.ps1
+# and kernel/build.ps1. Treat the first few kernel runs as a portability test.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  host:
+    name: Host compiler, language and OS test suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure a stable toolchain
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustc --version && cargo --version
+
+      - name: Build (release)
+        run: cargo build --release
+
+      - name: Test (release)
+        run: cargo test --release
+
+      # Note: this suite includes tests/kernel_boot.rs, which runs
+      # tools/kernel_ci.py. On a runner with no QEMU that script prints
+      # "KERNEL-CI: SKIP" *before* it builds anything, and the test treats that
+      # as the documented honest skip — so the absence of QEMU here is not a
+      # silent pass, it is a reported one.
+
+  kernel:
+    name: Real kernel in QEMU (non-blocking)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install QEMU and Python
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq qemu-system-x86 python3
+
+      - name: Ensure a stable toolchain and the bare-metal target
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          rustup target add x86_64-unknown-none
+
+      - name: Boot the OS and assert every phase gate
+        run: python3 tools/kernel_ci.py
+
+      - name: Keep the serial transcript and screendump on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-ci-logs
+          path: |
+            ${{ runner.temp }}/hr-kernel-serial.log
+            ${{ runner.temp }}/hr-kernel-vga.ppm
+          if-no-files-found: ignore

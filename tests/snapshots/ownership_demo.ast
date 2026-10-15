@@ -1,0 +1,927 @@
+Program {
+    items: [
+        Class(
+            ClassDef {
+                name: "Point",
+                fields: [
+                    (
+                        I64,
+                        "x",
+                    ),
+                    (
+                        I64,
+                        "y",
+                    ),
+                ],
+                span: Span {
+                    pos: Pos {
+                        line: 2,
+                        col: 1,
+                        offset: 81,
+                    },
+                    end: 161,
+                },
+            },
+        ),
+        Stmt(
+            Decl(
+                Named(
+                    "Point",
+                ),
+                "p",
+                None,
+                Span {
+                    pos: Pos {
+                        line: 4,
+                        col: 1,
+                        offset: 156,
+                    },
+                    end: 220,
+                },
+            ),
+        ),
+        Stmt(
+            ExprStmt(
+                Assign(
+                    Member(
+                        Ident(
+                            "p",
+                            Span {
+                                pos: Pos {
+                                    line: 5,
+                                    col: 1,
+                                    offset: 219,
+                                },
+                                end: 220,
+                            },
+                        ),
+                        "x",
+                        Span {
+                            pos: Pos {
+                                line: 5,
+                                col: 1,
+                                offset: 219,
+                            },
+                            end: 224,
+                        },
+                    ),
+                    Set,
+                    LitInt(
+                        3,
+                        Span {
+                            pos: Pos {
+                                line: 5,
+                                col: 7,
+                                offset: 225,
+                            },
+                            end: 226,
+                        },
+                    ),
+                    Span {
+                        pos: Pos {
+                            line: 5,
+                            col: 1,
+                            offset: 219,
+                        },
+                        end: 227,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 5,
+                        col: 1,
+                        offset: 219,
+                    },
+                    end: 229,
+                },
+            ),
+        ),
+        Stmt(
+            ExprStmt(
+                Assign(
+                    Member(
+                        Ident(
+                            "p",
+                            Span {
+                                pos: Pos {
+                                    line: 6,
+                                    col: 1,
+                                    offset: 228,
+                                },
+                                end: 229,
+                            },
+                        ),
+                        "y",
+                        Span {
+                            pos: Pos {
+                                line: 6,
+                                col: 1,
+                                offset: 228,
+                            },
+                            end: 233,
+                        },
+                    ),
+                    Set,
+                    LitInt(
+                        4,
+                        Span {
+                            pos: Pos {
+                                line: 6,
+                                col: 7,
+                                offset: 234,
+                            },
+                            end: 235,
+                        },
+                    ),
+                    Span {
+                        pos: Pos {
+                            line: 6,
+                            col: 1,
+                            offset: 228,
+                        },
+                        end: 236,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 6,
+                        col: 1,
+                        offset: 228,
+                    },
+                    end: 242,
+                },
+            ),
+        ),
+        Stmt(
+            ExprStmt(
+                Call(
+                    "Print",
+                    [
+                        Some(
+                            LitStr(
+                                "point: ",
+                                Span {
+                                    pos: Pos {
+                                        line: 7,
+                                        col: 7,
+                                        offset: 243,
+                                    },
+                                    end: 252,
+                                },
+                            ),
+                        ),
+                        Some(
+                            Member(
+                                Ident(
+                                    "p",
+                                    Span {
+                                        pos: Pos {
+                                            line: 7,
+                                            col: 18,
+                                            offset: 254,
+                                        },
+                                        end: 255,
+                                    },
+                                ),
+                                "x",
+                                Span {
+                                    pos: Pos {
+                                        line: 7,
+                                        col: 18,
+                                        offset: 254,
+                                    },
+                                    end: 258,
+                                },
+                            ),
+                        ),
+                        Some(
+                            LitStr(
+                                ",",
+                                Span {
+                                    pos: Pos {
+                                        line: 7,
+                                        col: 23,
+                                        offset: 259,
+                                    },
+                                    end: 262,
+                                },
+                            ),
+                        ),
+                        Some(
+                            Member(
+                                Ident(
+                                    "p",
+                                    Span {
+                                        pos: Pos {
+                                            line: 7,
+                                            col: 28,
+                                            offset: 264,
+                                        },
+                                        end: 265,
+                                    },
+                                ),
+                                "y",
+                                Span {
+                                    pos: Pos {
+                                        line: 7,
+                                        col: 28,
+                                        offset: 264,
+                                    },
+                                    end: 268,
+                                },
+                            ),
+                        ),
+                        Some(
+                            LitStr(
+                                "\n",
+                                Span {
+                                    pos: Pos {
+                                        line: 7,
+                                        col: 33,
+                                        offset: 269,
+                                    },
+                                    end: 273,
+                                },
+                            ),
+                        ),
+                    ],
+                    Span {
+                        pos: Pos {
+                            line: 7,
+                            col: 1,
+                            offset: 237,
+                        },
+                        end: 275,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 7,
+                        col: 1,
+                        offset: 237,
+                    },
+                    end: 280,
+                },
+            ),
+        ),
+        Stmt(
+            Decl(
+                Str,
+                "a",
+                Some(
+                    LitStr(
+                        "who owns me?\n",
+                        Span {
+                            pos: Pos {
+                                line: 9,
+                                col: 9,
+                                offset: 285,
+                            },
+                            end: 301,
+                        },
+                    ),
+                ),
+                Span {
+                    pos: Pos {
+                        line: 9,
+                        col: 1,
+                        offset: 277,
+                    },
+                    end: 306,
+                },
+            ),
+        ),
+        Stmt(
+            Decl(
+                Str,
+                "b",
+                Some(
+                    Ident(
+                        "a",
+                        Span {
+                            pos: Pos {
+                                line: 10,
+                                col: 9,
+                                offset: 311,
+                            },
+                            end: 312,
+                        },
+                    ),
+                ),
+                Span {
+                    pos: Pos {
+                        line: 10,
+                        col: 1,
+                        offset: 303,
+                    },
+                    end: 385,
+                },
+            ),
+        ),
+        Stmt(
+            Try(
+                Block(
+                    [
+                        ExprStmt(
+                            Call(
+                                "Print",
+                                [
+                                    Some(
+                                        Ident(
+                                            "a",
+                                            Span {
+                                                pos: Pos {
+                                                    line: 12,
+                                                    col: 9,
+                                                    offset: 396,
+                                                },
+                                                end: 397,
+                                            },
+                                        ),
+                                    ),
+                                ],
+                                Span {
+                                    pos: Pos {
+                                        line: 12,
+                                        col: 3,
+                                        offset: 390,
+                                    },
+                                    end: 399,
+                                },
+                            ),
+                            Span {
+                                pos: Pos {
+                                    line: 12,
+                                    col: 3,
+                                    offset: 390,
+                                },
+                                end: 473,
+                            },
+                        ),
+                    ],
+                    Span {
+                        pos: Pos {
+                            line: 11,
+                            col: 5,
+                            offset: 386,
+                        },
+                        end: 479,
+                    },
+                ),
+                Block(
+                    [
+                        ExprStmt(
+                            Call(
+                                "Print",
+                                [
+                                    Some(
+                                        LitStr(
+                                            "caught use-after-move: ",
+                                            Span {
+                                                pos: Pos {
+                                                    line: 14,
+                                                    col: 9,
+                                                    offset: 490,
+                                                },
+                                                end: 515,
+                                            },
+                                        ),
+                                    ),
+                                    Some(
+                                        Ident(
+                                            "catch_msg",
+                                            Span {
+                                                pos: Pos {
+                                                    line: 14,
+                                                    col: 36,
+                                                    offset: 517,
+                                                },
+                                                end: 526,
+                                            },
+                                        ),
+                                    ),
+                                    Some(
+                                        LitStr(
+                                            "\n",
+                                            Span {
+                                                pos: Pos {
+                                                    line: 14,
+                                                    col: 47,
+                                                    offset: 528,
+                                                },
+                                                end: 532,
+                                            },
+                                        ),
+                                    ),
+                                ],
+                                Span {
+                                    pos: Pos {
+                                        line: 14,
+                                        col: 3,
+                                        offset: 484,
+                                    },
+                                    end: 534,
+                                },
+                            ),
+                            Span {
+                                pos: Pos {
+                                    line: 14,
+                                    col: 3,
+                                    offset: 484,
+                                },
+                                end: 560,
+                            },
+                        ),
+                    ],
+                    Span {
+                        pos: Pos {
+                            line: 13,
+                            col: 9,
+                            offset: 480,
+                        },
+                        end: 566,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 11,
+                        col: 1,
+                        offset: 382,
+                    },
+                    end: 566,
+                },
+            ),
+        ),
+        Stmt(
+            ExprStmt(
+                Call(
+                    "Print",
+                    [
+                        Some(
+                            LitStr(
+                                "b is still fine: ",
+                                Span {
+                                    pos: Pos {
+                                        line: 16,
+                                        col: 7,
+                                        offset: 567,
+                                    },
+                                    end: 586,
+                                },
+                            ),
+                        ),
+                        Some(
+                            Ident(
+                                "b",
+                                Span {
+                                    pos: Pos {
+                                        line: 16,
+                                        col: 28,
+                                        offset: 588,
+                                    },
+                                    end: 589,
+                                },
+                            ),
+                        ),
+                    ],
+                    Span {
+                        pos: Pos {
+                            line: 16,
+                            col: 1,
+                            offset: 561,
+                        },
+                        end: 591,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 16,
+                        col: 1,
+                        offset: 561,
+                    },
+                    end: 596,
+                },
+            ),
+        ),
+        Stmt(
+            Decl(
+                I64,
+                "n",
+                Some(
+                    LitInt(
+                        5,
+                        Span {
+                            pos: Pos {
+                                line: 18,
+                                col: 9,
+                                offset: 601,
+                            },
+                            end: 602,
+                        },
+                    ),
+                ),
+                Span {
+                    pos: Pos {
+                        line: 18,
+                        col: 1,
+                        offset: 593,
+                    },
+                    end: 607,
+                },
+            ),
+        ),
+        Stmt(
+            Decl(
+                Ptr(
+                    I64,
+                ),
+                "shared",
+                Some(
+                    Unary(
+                        AddrOf,
+                        Ident(
+                            "n",
+                            Span {
+                                pos: Pos {
+                                    line: 19,
+                                    col: 16,
+                                    offset: 619,
+                                },
+                                end: 620,
+                            },
+                        ),
+                        Span {
+                            pos: Pos {
+                                line: 19,
+                                col: 15,
+                                offset: 618,
+                            },
+                            end: 621,
+                        },
+                    ),
+                ),
+                Span {
+                    pos: Pos {
+                        line: 19,
+                        col: 1,
+                        offset: 604,
+                    },
+                    end: 669,
+                },
+            ),
+        ),
+        Stmt(
+            ExprStmt(
+                Call(
+                    "Print",
+                    [
+                        Some(
+                            LitStr(
+                                "shared read: ",
+                                Span {
+                                    pos: Pos {
+                                        line: 20,
+                                        col: 7,
+                                        offset: 670,
+                                    },
+                                    end: 685,
+                                },
+                            ),
+                        ),
+                        Some(
+                            Unary(
+                                Deref,
+                                Ident(
+                                    "shared",
+                                    Span {
+                                        pos: Pos {
+                                            line: 20,
+                                            col: 25,
+                                            offset: 688,
+                                        },
+                                        end: 694,
+                                    },
+                                ),
+                                Span {
+                                    pos: Pos {
+                                        line: 20,
+                                        col: 24,
+                                        offset: 687,
+                                    },
+                                    end: 695,
+                                },
+                            ),
+                        ),
+                        Some(
+                            LitStr(
+                                "\n",
+                                Span {
+                                    pos: Pos {
+                                        line: 20,
+                                        col: 33,
+                                        offset: 696,
+                                    },
+                                    end: 700,
+                                },
+                            ),
+                        ),
+                    ],
+                    Span {
+                        pos: Pos {
+                            line: 20,
+                            col: 1,
+                            offset: 664,
+                        },
+                        end: 702,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 20,
+                        col: 1,
+                        offset: 664,
+                    },
+                    end: 706,
+                },
+            ),
+        ),
+        Stmt(
+            Try(
+                Block(
+                    [
+                        Decl(
+                            Ptr(
+                                I64,
+                            ),
+                            "excl",
+                            Some(
+                                Unary(
+                                    AddrOfMut,
+                                    Ident(
+                                        "n",
+                                        Span {
+                                            pos: Pos {
+                                                line: 22,
+                                                col: 20,
+                                                offset: 728,
+                                            },
+                                            end: 729,
+                                        },
+                                    ),
+                                    Span {
+                                        pos: Pos {
+                                            line: 22,
+                                            col: 15,
+                                            offset: 723,
+                                        },
+                                        end: 730,
+                                    },
+                                ),
+                            ),
+                            Span {
+                                pos: Pos {
+                                    line: 22,
+                                    col: 3,
+                                    offset: 711,
+                                },
+                                end: 802,
+                            },
+                        ),
+                    ],
+                    Span {
+                        pos: Pos {
+                            line: 21,
+                            col: 5,
+                            offset: 707,
+                        },
+                        end: 808,
+                    },
+                ),
+                Block(
+                    [
+                        ExprStmt(
+                            Call(
+                                "Print",
+                                [
+                                    Some(
+                                        LitStr(
+                                            "caught borrow conflict: ",
+                                            Span {
+                                                pos: Pos {
+                                                    line: 24,
+                                                    col: 9,
+                                                    offset: 819,
+                                                },
+                                                end: 845,
+                                            },
+                                        ),
+                                    ),
+                                    Some(
+                                        Ident(
+                                            "catch_msg",
+                                            Span {
+                                                pos: Pos {
+                                                    line: 24,
+                                                    col: 37,
+                                                    offset: 847,
+                                                },
+                                                end: 856,
+                                            },
+                                        ),
+                                    ),
+                                    Some(
+                                        LitStr(
+                                            "\n",
+                                            Span {
+                                                pos: Pos {
+                                                    line: 24,
+                                                    col: 48,
+                                                    offset: 858,
+                                                },
+                                                end: 862,
+                                            },
+                                        ),
+                                    ),
+                                ],
+                                Span {
+                                    pos: Pos {
+                                        line: 24,
+                                        col: 3,
+                                        offset: 813,
+                                    },
+                                    end: 864,
+                                },
+                            ),
+                            Span {
+                                pos: Pos {
+                                    line: 24,
+                                    col: 3,
+                                    offset: 813,
+                                },
+                                end: 866,
+                            },
+                        ),
+                    ],
+                    Span {
+                        pos: Pos {
+                            line: 23,
+                            col: 9,
+                            offset: 809,
+                        },
+                        end: 873,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 21,
+                        col: 1,
+                        offset: 703,
+                    },
+                    end: 873,
+                },
+            ),
+        ),
+        Stmt(
+            Unsafe(
+                Block(
+                    [
+                        ExprStmt(
+                            Assign(
+                                Unary(
+                                    Deref,
+                                    Ident(
+                                        "shared",
+                                        Span {
+                                            pos: Pos {
+                                                line: 26,
+                                                col: 11,
+                                                offset: 877,
+                                            },
+                                            end: 883,
+                                        },
+                                    ),
+                                    Span {
+                                        pos: Pos {
+                                            line: 26,
+                                            col: 10,
+                                            offset: 876,
+                                        },
+                                        end: 885,
+                                    },
+                                ),
+                                Set,
+                                LitInt(
+                                    9,
+                                    Span {
+                                        pos: Pos {
+                                            line: 26,
+                                            col: 20,
+                                            offset: 886,
+                                        },
+                                        end: 887,
+                                    },
+                                ),
+                                Span {
+                                    pos: Pos {
+                                        line: 26,
+                                        col: 10,
+                                        offset: 876,
+                                    },
+                                    end: 888,
+                                },
+                            ),
+                            Span {
+                                pos: Pos {
+                                    line: 26,
+                                    col: 10,
+                                    offset: 876,
+                                },
+                                end: 890,
+                            },
+                        ),
+                    ],
+                    Span {
+                        pos: Pos {
+                            line: 26,
+                            col: 8,
+                            offset: 874,
+                        },
+                        end: 954,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 26,
+                        col: 1,
+                        offset: 867,
+                    },
+                    end: 954,
+                },
+            ),
+        ),
+        Stmt(
+            ExprStmt(
+                Call(
+                    "Print",
+                    [
+                        Some(
+                            LitStr(
+                                "after unsafe write, n = ",
+                                Span {
+                                    pos: Pos {
+                                        line: 27,
+                                        col: 7,
+                                        offset: 955,
+                                    },
+                                    end: 981,
+                                },
+                            ),
+                        ),
+                        Some(
+                            Ident(
+                                "n",
+                                Span {
+                                    pos: Pos {
+                                        line: 27,
+                                        col: 35,
+                                        offset: 983,
+                                    },
+                                    end: 984,
+                                },
+                            ),
+                        ),
+                        Some(
+                            LitStr(
+                                "\n",
+                                Span {
+                                    pos: Pos {
+                                        line: 27,
+                                        col: 38,
+                                        offset: 986,
+                                    },
+                                    end: 990,
+                                },
+                            ),
+                        ),
+                    ],
+                    Span {
+                        pos: Pos {
+                            line: 27,
+                            col: 1,
+                            offset: 949,
+                        },
+                        end: 992,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 27,
+                        col: 1,
+                        offset: 949,
+                    },
+                    end: 993,
+                },
+            ),
+        ),
+    ],
+}

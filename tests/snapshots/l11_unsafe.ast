@@ -1,0 +1,82 @@
+Program {
+    items: [
+        Stmt(
+            Unsafe(
+                Block(
+                    [
+                        ExprStmt(
+                            Assign(
+                                Unary(
+                                    Deref,
+                                    Ident(
+                                        "p",
+                                        Span {
+                                            pos: Pos {
+                                                line: 1,
+                                                col: 11,
+                                                offset: 10,
+                                            },
+                                            end: 11,
+                                        },
+                                    ),
+                                    Span {
+                                        pos: Pos {
+                                            line: 1,
+                                            col: 10,
+                                            offset: 9,
+                                        },
+                                        end: 13,
+                                    },
+                                ),
+                                Set,
+                                LitInt(
+                                    9,
+                                    Span {
+                                        pos: Pos {
+                                            line: 1,
+                                            col: 15,
+                                            offset: 14,
+                                        },
+                                        end: 15,
+                                    },
+                                ),
+                                Span {
+                                    pos: Pos {
+                                        line: 1,
+                                        col: 10,
+                                        offset: 9,
+                                    },
+                                    end: 16,
+                                },
+                            ),
+                            Span {
+                                pos: Pos {
+                                    line: 1,
+                                    col: 10,
+                                    offset: 9,
+                                },
+                                end: 18,
+                            },
+                        ),
+                    ],
+                    Span {
+                        pos: Pos {
+                            line: 1,
+                            col: 8,
+                            offset: 7,
+                        },
+                        end: 18,
+                    },
+                ),
+                Span {
+                    pos: Pos {
+                        line: 1,
+                        col: 1,
+                        offset: 0,
+                    },
+                    end: 18,
+                },
+            ),
+        ),
+    ],
+}

@@ -1,0 +1,61 @@
+// /TOS/Editor.HR — the line editor (SPEC_TOS T5.x).
+//
+// EdOpen / EdLines / EdLine / EdSet / EdFind / EdSave are the plumbing: they are
+// the only parts that touch the filesystem. Every *command* below is HolyRust,
+// so the editor's vocabulary is editable like the rest of the OS — which is the
+// whole point of a system that is written in itself.
+//
+// The buffer is one session at a time and lives beside the filesystem on the
+// runtime context, so "the file you are editing" is part of the running machine.
+
+// Ed(path) — open a file for editing and report what was loaded.
+I64 Ed(Str path) {
+  I64 n = EdOpen(path);
+  if (n < 0) {
+    Print("ed: no such file: ", path, "\n");
+  } else {
+    Print("ed: ", path, " — ", n, " lines\n");
+  }
+  return n;
+}
+
+// EdShow() — print the buffer with line numbers, so an edit is reviewable
+// before it is saved.
+U0 EdShow() {
+  I64 n = EdLines();
+  if (n == 0) {
+    Print("ed: no file open\n");
+  }
+  I64 i = 0;
+  while (i < n) {
+    Str l = EdLine(i);
+    Print(i, ": ", l, "\n");
+    i = i + 1;
+  }
+}
+
+// EdReplaceLine(needle, text) — replace the first line containing `needle`.
+// Returns the line index, or -1 when nothing matched (a miss is reported, never
+// silently ignored).
+I64 EdReplaceLine(Str needle, Str text) {
+  I64 i = EdFind(needle);
+  if (i >= 0) {
+    EdSet(i, text);
+    Print("ed: line ", i, " replaced\n");
+  } else {
+    Print("ed: no line contains ", needle, "\n");
+  }
+  return i;
+}
+
+// EdPut(needle, text) — like EdReplaceLine, for the common case where a miss
+// should be visible immediately.
+I64 EdSaveAndReport() {
+  I64 ok = EdSave();
+  if (ok == 1) {
+    Print("ed: file written\n");
+  } else {
+    Print("ed: nothing saved\n");
+  }
+  return ok;
+}

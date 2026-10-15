@@ -1,0 +1,16 @@
+[package]
+name = "hr-kernel"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "hr_kernel"
+crate-type = ["staticlib"]
+path = "src/lib.rs"
+
+[dependencies]
+holyrust = { path = "..", default-features = false }
+
+[profile.release]
+panic = "abort"
+debug = false

@@ -1,0 +1,71 @@
+Program {
+    items: [
+        Stmt(
+            Ownership(
+                Off,
+                Span {
+                    pos: Pos {
+                        line: 1,
+                        col: 1,
+                        offset: 0,
+                    },
+                    end: 22,
+                },
+            ),
+        ),
+        Fn(
+            FnDef {
+                ret: I64,
+                name: "f",
+                params: [],
+                variadic: false,
+                body: [
+                    Return(
+                        Some(
+                            LitInt(
+                                1,
+                                Span {
+                                    pos: Pos {
+                                        line: 1,
+                                        col: 37,
+                                        offset: 36,
+                                    },
+                                    end: 37,
+                                },
+                            ),
+                        ),
+                        Span {
+                            pos: Pos {
+                                line: 1,
+                                col: 30,
+                                offset: 29,
+                            },
+                            end: 40,
+                        },
+                    ),
+                ],
+                span: Span {
+                    pos: Pos {
+                        line: 1,
+                        col: 20,
+                        offset: 19,
+                    },
+                    end: 43,
+                },
+            },
+        ),
+        Stmt(
+            Ownership(
+                Strict,
+                Span {
+                    pos: Pos {
+                        line: 1,
+                        col: 42,
+                        offset: 41,
+                    },
+                    end: 62,
+                },
+            ),
+        ),
+    ],
+}

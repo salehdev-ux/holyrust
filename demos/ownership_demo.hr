@@ -1,0 +1,27 @@
+// ownership_demo.hr — L8/L9/L10/L11: runtime ownership with live diagnostics.
+class Point { I64 x; I64 y; };            // L10: class = value type (v1)
+
+Point p;                                   // zero-initialized
+p.x = 3;
+p.y = 4;
+Print("point: ", p.x, ",", p.y, "\n");
+
+Str a = "who owns me?\n";
+Str b = a;                                 // MOVE: invalidates `a` at runtime
+try {
+  Print(a);                                // use-after-move -> live diagnostic ...
+} catch {
+  Print("caught use-after-move: ", catch_msg, "\n");   // ... catchable (L9)
+}
+Print("b is still fine: ", b);
+
+I64 n = 5;
+I64 *shared = &n;                          // shared borrow
+Print("shared read: ", *shared, "\n");
+try {
+  I64 *excl = &mut n;                      // borrow conflict: exclusive while shared alive
+} catch {
+  Print("caught borrow conflict: ", catch_msg, "\n");
+}
+unsafe { *shared = 9; }                    // L11: unsafe disables runtime checks
+Print("after unsafe write, n = ", n, "\n");
