@@ -219,6 +219,33 @@ def main():
             buf += chunk
         return buf
 
+
+    def wait_idle(marker: bytes, timeout=30.0) -> None:
+        """Wait until the guest has FINISHED, not merely been echoed.
+
+        Looks for `marker` only after the buffer position we are at now (so the
+        previous command's output cannot satisfy it), then requires the shell
+        prompt after it. The prompt is printed only when the unit completes, so
+        this is what actually means "the guest is done and its pixels settle".
+        """
+        nonlocal buf
+        start = len(buf)
+        end = time.time() + timeout
+        while True:
+            here = buf.find(marker, start)
+            if here >= 0 and buf.find(b"hr> ", here + len(marker)) >= 0:
+                return
+            if time.time() > end:
+                fail(f"guest never returned to a prompt after {marker!r}; tail:\n"
+                     f"{buf[start:].decode(errors='replace')[-400:]}")
+            try:
+                chunk = ser.recv(4096)
+            except socket.timeout:
+                fail(f"serial recv timeout waiting for idle after {marker!r}")
+            if not chunk:
+                fail("serial closed while waiting for idle after " + repr(marker))
+            buf += chunk
+
     def read_value(prefix: bytes, timeout=10.0) -> str:
         """Read until `prefix`, then until the rest of that line arrives.
 
@@ -367,7 +394,7 @@ def main():
     # pixels — far stronger than "the screen is not blank".
     type_line('GfxClear(0); Plot(100, 100, 15); Plot(101, 100, 4); Plot(100, 101, 2); '
               'Print("TOS-CI drawn\\n");', settle=0.5)
-    read_until(b"TOS-CI drawn", timeout=15)
+    wait_idle(b"TOS-CI drawn", timeout=20)
     w, h, body = screendump_pixels()
     if (w, h) != (640, 480):
         fail(f"screendump is {w}x{h}, expected 640x480 (mode 12h not active)")
@@ -389,7 +416,7 @@ def main():
     # reached through the bare `demo` command word in /TOS/Shell.HR.
     type_line('demo', settle=1.0)
     type_line('Print("TOS-CI demo-done\\n");', settle=0.5)
-    read_until(b"TOS-CI demo-done", timeout=25)
+    wait_idle(b"TOS-CI demo-done", timeout=30)
     w, h, body = screendump_pixels()
     if not is_blue(pixel(body, w, 300, 20)):
         fail(f"GfxDemo banner missing at (300,20): {pixel(body, w, 300, 20)}")
@@ -402,7 +429,7 @@ def main():
     # where asked while the rest of a cleared screen stays black.
     type_line('GfxClear(0); TextOut(200, 300, 15, "POST-GRAPHICS-CONSOLE"); '
               'Print("TOS-CI bc2\\n");', settle=0.5)
-    read_until(b"TOS-CI bc2", timeout=15)
+    wait_idle(b"TOS-CI bc2", timeout=20)
     w, h, body = screendump_pixels()
     console_lit = sum(1 for xx in range(0, 240) for yy in range(0, 8)
                       if is_bright(pixel(body, w, xx, yy)))
@@ -570,7 +597,7 @@ def main():
 
     # Re-include the file: the new definition becomes the running one.
     type_line('#include "/TOS/Files.HR"\nPrint("TOS-CI reinstated\\n");', settle=0.5)
-    read_until(b"TOS-CI reinstated", timeout=25)
+    wait_idle(b"TOS-CI reinstated", timeout=30)
 
     type_line('Print("TOS-CI ed-after=", OsName(), "\\n");', settle=0.8)
     after = read_value(b"TOS-CI ed-after=")
@@ -591,7 +618,7 @@ def main():
     # text and the suite never noticed. Read the shape instead: '/' is a forward
     # slash, so its top row lights the right half and its bottom row the left.
     type_line('GfxClear(0); GfxChar(100, 100, 15, 47); Print("TOS-CI glyph\\n");', settle=0.5)
-    read_until(b"TOS-CI glyph", timeout=15)
+    wait_idle(b"TOS-CI glyph", timeout=20)
     w, h, body = screendump_pixels()
     top = [x for x in range(100, 108) if is_bright(pixel(body, w, x, 100))]
     bottom = [x for x in range(100, 108) if is_bright(pixel(body, w, x, 106))]
@@ -608,7 +635,7 @@ def main():
     # banks the aircraft, and move when the mouse pitches it.
     type_line('FlightInit();', settle=0.6)
     type_line('FlightStep(); Print("TOS-CI fly1\\n");', settle=0.6)
-    read_until(b"TOS-CI fly1", timeout=30)
+    wait_idle(b"TOS-CI fly1", timeout=40)
     w, h, body = screendump_pixels()
     l0 = horizon_y(body, w, 250)
     r0 = horizon_y(body, w, 390)
@@ -623,7 +650,7 @@ def main():
     mon("mouse_move 60 0")
     mon("mouse_move 60 0")
     type_line('FlightStep(); FlightStep(); Print("TOS-CI fly2\\n");', settle=0.6)
-    read_until(b"TOS-CI fly2", timeout=30)
+    wait_idle(b"TOS-CI fly2", timeout=40)
     w, h, body = screendump_pixels()
     l1 = horizon_y(body, w, 250)
     r1 = horizon_y(body, w, 390)
@@ -637,7 +664,7 @@ def main():
     # Mouse Y pitches it: the horizon must move vertically.
     mon("mouse_move 0 60")
     type_line('FlightStep(); Print("TOS-CI fly3\\n");', settle=0.6)
-    read_until(b"TOS-CI fly3", timeout=30)
+    wait_idle(b"TOS-CI fly3", timeout=40)
     w, h, body = screendump_pixels()
     c1 = horizon_y(body, w, 320)
     if c1 is None:
