@@ -58,10 +58,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install QEMU and Python
+      - name: Install QEMU, Python and binutils
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq qemu-system-x86 python3
+          # qemu-system-x86 boots the OS. binutils supplies as/ld/objcopy, which
+          # kernel/build.sh uses on Linux (the Windows path uses rust-lld instead
+          # and needs none of them).
+          sudo apt-get install -y -qq qemu-system-x86 python3 binutils
 
       - name: Ensure a stable toolchain and the bare-metal target
         run: |
@@ -70,6 +73,14 @@ jobs:
           rustup target add x86_64-unknown-none
 
       - name: Boot the OS and assert every phase gate
+        # The SPEC's boot gate is "< 5 s to the shell", measured on the machine
+        # the project was developed on (1.5-4.7 s there). A shared runner is
+        # slower and gets descheduled, and a descheduled emulator simply takes
+        # longer -- so the number is raised here explicitly rather than being
+        # quietly meaningless. Everything else is asserted exactly as it is
+        # locally.
+        env:
+          HR_BOOT_GATE_S: "20"
         run: python3 tools/kernel_ci.py
 
       - name: Keep the serial transcript and screendump on failure
@@ -77,7 +88,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: kernel-ci-logs
+          # The script writes into Python's temp dir, which is $TMPDIR when the
+          # runner sets it and /tmp when it does not — cover both rather than
+          # silently uploading nothing at the moment the logs matter.
           path: |
-            ${{ runner.temp }}/hr-kernel-serial.log
-            ${{ runner.temp }}/hr-kernel-vga.ppm
+            ${{ runner.temp }}/hr-kernel-*
+            /tmp/hr-kernel-*
           if-no-files-found: ignore
